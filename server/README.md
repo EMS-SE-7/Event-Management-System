@@ -27,9 +27,11 @@ Port 5050, not 5000 — macOS AirPlay Receiver uses 5000.
 
 ## Making Organizers
 
-1. The organizer registers normally.
-2. Add their email to `ORGANIZER_EMAILS` in `.env` (comma-separated).
-3. Run `npm run seed:organizers`.
+Organizers are created by a script, never by signup.
+
+1. In `.env`, set `ORGANIZER_EMAILS` (comma-separated) and `SEED_PASSWORD` (a mock password for dev; change it for real use).
+2. Run `npm run seed:organizers`. Each email gets an Organizer account with that password.
+3. An email that is already registered is skipped, because someone else may have claimed it first. Check it is the right person, then run `npm run seed:organizers -- --force` to promote it.
 
 ## Protecting your routes
 
