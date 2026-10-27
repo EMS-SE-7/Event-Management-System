@@ -9,8 +9,10 @@ app.use(express.json());
 
 app.get('/api/health', (req, res) => res.json({ status: 'ok' }));
 
+app.use('/api/events/:eventId/participants', require('./routes/participants.routes'));
 app.use('/api/events', require('./routes/events.routes'));
-app.use(require('./middleware/errorHandler'));
+app.use('/api/registrations', require('./routes/registrations.routes'));
+app.use(require('./middleware/errorHandler')); // always the last line
 
 const PORT = process.env.PORT || 5000;
 
