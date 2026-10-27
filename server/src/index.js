@@ -19,6 +19,9 @@ app.use((err, req, res, next) => {
   res.status(err.status || 500).json({ message: err.expose ? err.message : 'Server error' });
 });
 
+app.use('/api/events', require('./routes/events.routes'));
+app.use(require('./middleware/errorHandler')); 
+
 const PORT = process.env.PORT || 5000;
 if (require.main === module) {
   if (!process.env.JWT_SECRET) {
