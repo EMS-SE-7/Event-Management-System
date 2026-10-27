@@ -22,9 +22,9 @@ export function AuthProvider({ children }) {
     if (!getToken()) return
     api('/auth/me')
       .then((data) => setUser(data.user))
-      .catch(() => {}) // a 401 already logged out; other errors leave the user signed out of the UI
+      .catch(logout) // 401 already logged out; any other failure must not leave a stale token behind
       .finally(() => setChecking(false))
-  }, [])
+  }, [logout])
 
   const authenticate = useCallback(async (path, body) => {
     const data = await api(path, { method: 'POST', body })
