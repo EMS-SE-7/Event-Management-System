@@ -33,3 +33,11 @@ p { margin: 4px 0; }
 
 .open { color: #146c2e; font-weight: 600; }
 .closed { color: var(--muted); }
+
+.event-details { background: var(--card); border: 1px solid var(--line); border-radius: 8px; padding: 20px; }
+.event-details h1 { margin: 0; }
+.description { margin: 12px 0; line-height: 1.5; }
+.facts { display: grid; grid-template-columns: max-content 1fr; gap: 6px 16px; margin: 16px 0; }
+.facts dt { color: var(--muted); }
+.facts dd { margin: 0; }
+.register-slot { margin-top: 12px; }

@@ -2,15 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { listEvents } from '../../api/events.js'
 import StatusBadge from '../../components/StatusBadge.jsx'
-
-function formatDate(iso) {
-  return new Date(iso).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' })
-}
-
-function seatsText(event) {
-  if (event.isFull) return 'Full'
-  return `${event.seatsLeft} of ${event.capacity} seats left`
-}
+import { formatDate, seatsText } from '../../utils/format.js'
 
 // DISC-01, DISC-05, DISC-06: browse events with status, seats and registration availability
 export default function BrowseEventsPage() {
