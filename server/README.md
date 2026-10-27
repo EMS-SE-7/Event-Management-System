@@ -52,6 +52,11 @@ Inside a protected handler:
 
 Responses: no/invalid token → `401`, wrong role → `403`. Errors use the shared format `{ error: { code, message } }`.
 
+## Production notes
+
+- Serve the API over HTTPS only (SRS: HTTPS in production). The app does not redirect, so terminate TLS at the host or proxy.
+- Tokens are bearer JWTs in the `Authorization` header; CORS is currently open. Restrict the origin before going live.
+
 ## Frontend
 
 After login, store the token and send it on every request:

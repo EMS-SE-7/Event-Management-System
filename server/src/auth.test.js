@@ -55,7 +55,7 @@ describe('register', () => {
     expect(res.body.user.role).toBe('Student');
   });
 
-  test('stores a bcrypt hash, never the plain password (TC-SEC-01)', async () => {
+  test('stores a bcrypt hash, never the plain password (TC-AUTH-03, TC-SEC-01)', async () => {
     await register();
     const stored = await User.findOne({ email: student.email }).select('+password');
     expect(stored.password).not.toBe(student.password);
@@ -70,7 +70,7 @@ describe('register', () => {
   });
 });
 
-describe('login (TC-AUTH-01, TC-AUTH-07)', () => {
+describe('login (TC-AUTH-01, TC-AUTH-02, TC-AUTH-04, TC-AUTH-07)', () => {
   beforeEach(() => register());
 
   test('valid credentials return token and role', async () => {
