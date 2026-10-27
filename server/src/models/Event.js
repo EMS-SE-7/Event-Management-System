@@ -3,9 +3,7 @@ const mongoose = require('mongoose');
 const CATEGORIES = ['Technical', 'Cultural', 'Sports', 'Workshop', 'Seminar', 'Club Activity', 'Other'];
 const STORED_STATUSES = ['Upcoming', 'Cancelled'];
 
-// "In the future" is only checked when the event is first created (EVENT-08),
-// so an event that has already started can still be saved later (e.g. cancelled).
-// Dates must be in the future when the event is created, or when that date is
+// A date must be in the future when the event is created, or when that date is
 // changed in an edit. Untouched dates on an existing event are not re-checked,
 // so an event that has already started can still be cancelled (EVENT-08).
 function inFutureWhenChanged(path) {
@@ -14,7 +12,6 @@ function inFutureWhenChanged(path) {
     return value instanceof Date && value.getTime() > Date.now();
   };
 }
-
 
 const eventSchema = new mongoose.Schema(
   {
@@ -109,7 +106,7 @@ const eventSchema = new mongoose.Schema(
       required: [true, 'Organizer is required'],
     },
   },
-    { timestamps: true }
+  { timestamps: true }
 );
 
 // On edits, re-check rules that involve more than one field (EVENT-08).
