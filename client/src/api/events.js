@@ -11,3 +11,4 @@ const source = useMock ? mock : http
 
 export const listEvents = source.listEvents
 export const getEvent = source.getEvent
+export const createEvent = source.createEvent

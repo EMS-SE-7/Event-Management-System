@@ -25,3 +25,7 @@ export function listEvents({ page = 1, limit = 20 } = {}) {
 export function getEvent(id) {
   return request(`/events/${encodeURIComponent(id)}`)
 }
+
+export function createEvent(input) {
+  return request('/events', { method: 'POST', body: JSON.stringify(input) })
+}

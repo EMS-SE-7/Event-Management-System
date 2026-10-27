@@ -29,7 +29,10 @@ export default function BrowseEventsPage() {
 
   return (
     <main className="page">
-      <h1>Browse events</h1>
+      <div className="page-head">
+        <h1>Browse events</h1>
+        <Link to="/organizer/events/new" className="button">Create event</Link>
+      </div>
 
       {loading && <p className="muted">Loading events...</p>}
       {error && <p className="error" role="alert">Could not load events: {error}</p>}

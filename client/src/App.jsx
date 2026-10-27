@@ -1,6 +1,7 @@
 import { Navigate, Route, Routes } from 'react-router-dom'
 import BrowseEventsPage from './pages/events/BrowseEventsPage.jsx'
 import EventDetailsPage from './pages/events/EventDetailsPage.jsx'
+import CreateEventPage from './pages/organizer/CreateEventPage.jsx'
 
 export default function App() {
   return (
@@ -8,6 +9,7 @@ export default function App() {
       <Route path="/" element={<Navigate to="/events" replace />} />
       <Route path="/events" element={<BrowseEventsPage />} />
       <Route path="/events/:id" element={<EventDetailsPage />} />
+      <Route path="/organizer/events/new" element={<CreateEventPage />} />
     </Routes>
   )
 }
