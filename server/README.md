@@ -8,10 +8,10 @@ Express + MongoDB (Mongoose) REST API.
 cd server
 npm install
 cp .env.example .env   # set a long random JWT_SECRET
-npm run dev            # http://localhost:5050
+npm run dev            # http://localhost:5000 (PORT in .env)
 ```
 
-Port 5050, not 5000 — macOS AirPlay Receiver uses 5000.
+Default port is 5000. macOS AirPlay Receiver also uses 5000, so on a Mac set `PORT=5050` in your local `.env`.
 
 ## Auth routes
 
@@ -36,7 +36,7 @@ Organizers are created by a script, never by signup.
 ## Protecting your routes
 
 ```js
-const { protect, authorizeRoles } = require('../middleware/auth');
+const { protect, authorizeRoles } = require('../middleware/auth'); // from server/src/routes/
 
 router.get('/', protect, listEvents);                                  // any logged-in user
 router.post('/', protect, authorizeRoles('Organizer'), createEvent);   // organizers only
