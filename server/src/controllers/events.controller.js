@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 const Event = require('../models/Event');
 const AppError = require('../utils/AppError');
-const { withCalculatedFields } = require('../utils/eventStatus');
+const { withCalculatedFields, computeStatus } = require('../utils/eventStatus');
 
 // Only these fields can come from the request body. organizer comes from the
 // logged-in user (EVENT-07), and status/registeredCount always start at their defaults.
@@ -57,4 +57,55 @@ async function getEvent(req, res) {
   res.json({ data: withCalculatedFields(event) });
 }
 
-module.exports = { createEvent, listEvents, getEvent };
+// Finds the event and makes sure the logged-in user owns it (EVENT-07).
+async function loadOwnEvent(req) {
+  const event = mongoose.isValidObjectId(req.params.id) ? await Event.findById(req.params.id) : null;
+  if (!event) {
+    throw new AppError(404, 'NOT_FOUND', 'Event not found');
+  }
+  if (String(event.organizer) !== String(req.user.id)) {
+    throw new AppError(403, 'FORBIDDEN', 'You can only change your own events');
+  }
+  return event;
+}
+
+// GET /api/events/mine - the organizer's own events
+async function listMyEvents(req, res) {
+  const { page, limit } = readPaging(req.query);
+  const filter = { organizer: req.user.id };
+  const [events, total] = await Promise.all([
+    Event.find(filter).sort({ startDateTime: 1 }).skip((page - 1) * limit).limit(limit),
+    Event.countDocuments(filter),
+  ]);
+  const now = new Date();
+  res.json({
+    data: events.map((event) => withCalculatedFields(event, now)),
+    meta: { page, limit, total },
+  });
+}
+
+// PATCH /api/events/:id (EVENT-04, EVENT-07, EVENT-08)
+async function updateEvent(req, res) {
+  const event = await loadOwnEvent(req);
+  const current = computeStatus(event);
+  if (current === 'Cancelled' || current === 'Completed') {
+    throw new AppError(409, 'CONFLICT', `A ${current.toLowerCase()} event cannot be edited`);
+  }
+  event.set(pick(req.body || {}, CREATE_FIELDS)); // organizer/status/registeredCount cannot be changed here
+  await event.save(); // schema rules throw a ValidationError -> 400
+  res.json({ data: withCalculatedFields(event) });
+}
+
+// PATCH /api/events/:id/cancel (EVENT-05, EVENT-07)
+async function cancelEvent(req, res) {
+  const event = await loadOwnEvent(req);
+  const current = computeStatus(event);
+  if (current === 'Cancelled' || current === 'Completed') {
+    throw new AppError(409, 'CONFLICT', `A ${current.toLowerCase()} event cannot be cancelled`);
+  }
+  event.status = 'Cancelled';
+  await event.save();
+  res.json({ data: withCalculatedFields(event) });
+}
+
+module.exports = { createEvent, listEvents, getEvent, listMyEvents, updateEvent, cancelEvent };
