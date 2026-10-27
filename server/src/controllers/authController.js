@@ -1,5 +1,6 @@
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
+const AppError = require('../utils/AppError');
 
 const signToken = (user) =>
   jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, {
@@ -13,7 +14,7 @@ const authResponse = (user) => ({ token: signToken(user), user: publicUser(user)
 const register = async (req, res) => {
   const { name, email, password } = req.body || {};
   if (!name || !email || !password) {
-    return res.status(400).json({ message: 'Name, email and password are required' });
+    throw new AppError(400, 'VALIDATION_ERROR', 'Name, email and password are required');
   }
 
   try {
@@ -22,10 +23,10 @@ const register = async (req, res) => {
     res.status(201).json(authResponse(user));
   } catch (err) {
     if (err.code === 11000) {
-      return res.status(409).json({ message: 'Email already registered' });
+      throw new AppError(409, 'CONFLICT', 'Email already registered');
     }
     if (err.name === 'ValidationError') {
-      return res.status(400).json({ message: Object.values(err.errors)[0].message });
+      throw new AppError(400, 'VALIDATION_ERROR', Object.values(err.errors)[0].message);
     }
     throw err;
   }
@@ -34,13 +35,13 @@ const register = async (req, res) => {
 const login = async (req, res) => {
   const { email, password } = req.body || {};
   if (typeof email !== 'string' || typeof password !== 'string' || !email || !password) {
-    return res.status(400).json({ message: 'Email and password are required' });
+    throw new AppError(400, 'VALIDATION_ERROR', 'Email and password are required');
   }
 
   const user = await User.findOne({ email: email.toLowerCase().trim() }).select('+password');
   // Same message for unknown email and wrong password, so emails can't be probed
   if (!user || !(await user.matchPassword(password))) {
-    return res.status(401).json({ message: 'Invalid credentials' });
+    throw new AppError(401, 'INVALID_CREDENTIALS', 'Invalid credentials');
   }
 
   res.json(authResponse(user));

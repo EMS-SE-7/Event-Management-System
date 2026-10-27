@@ -1,34 +1,40 @@
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
+const AppError = require('../utils/AppError');
 
-const protect = async (req, res, next) => {
+const authenticate = async (req, res, next) => {
   const header = req.headers.authorization || '';
   if (!header.startsWith('Bearer ')) {
-    return res.status(401).json({ message: 'Not authorized, no token' });
+    return next(new AppError(401, 'UNAUTHENTICATED', 'Please log in'));
   }
 
   let decoded;
   try {
     decoded = jwt.verify(header.slice(7), process.env.JWT_SECRET, { algorithms: ['HS256'] });
   } catch {
-    return res.status(401).json({ message: 'Not authorized, token invalid' });
+    return next(new AppError(401, 'UNAUTHENTICATED', 'Session expired or invalid, please log in again'));
   }
 
   // Load from DB so deleted users and role changes take effect immediately
   const user = await User.findById(decoded.id);
   if (!user) {
-    return res.status(401).json({ message: 'Not authorized, user not found' });
+    return next(new AppError(401, 'UNAUTHENTICATED', 'Please log in'));
   }
 
   req.user = user;
   next();
 };
 
-const authorizeRoles = (...roles) => (req, res, next) => {
-  if (!req.user || !roles.includes(req.user.role)) {
-    return res.status(403).json({ message: 'Access denied' });
-  }
-  next();
+// Roles compare case-insensitively: 'organizer' and 'Organizer' both match
+const requireRole = (...roles) => {
+  const allowed = roles.map((r) => r.toLowerCase());
+  return (req, res, next) => {
+    if (!req.user || !allowed.includes(String(req.user.role).toLowerCase())) {
+      return next(new AppError(403, 'FORBIDDEN', 'You do not have permission to do this'));
+    }
+    next();
+  };
 };
 
-module.exports = { protect, authorizeRoles };
+// protect and authorizeRoles stay as aliases: those names were promised to teammates
+module.exports = { authenticate, requireRole, protect: authenticate, authorizeRoles: requireRole };

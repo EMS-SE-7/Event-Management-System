@@ -7,7 +7,8 @@ const { MongoMemoryServer } = require('mongodb-memory-server');
 process.env.JWT_SECRET = 'test-secret';
 const app = require('./index');
 const User = require('./models/User');
-const { protect, authorizeRoles } = require('./middleware/auth');
+const { authenticate, requireRole, protect, authorizeRoles } = require('./middleware/auth');
+const errorHandler = require('./middleware/errorHandler');
 
 const student = { name: 'Stu', email: 'pes1ug24cs001@pesu.pes.edu', password: 'secret123' };
 let mongod;
@@ -17,9 +18,11 @@ jest.setTimeout(120000);
 
 // Organizer-only route mounted the way other modules will use the middleware
 const guarded = express();
-guarded.get('/org', protect, authorizeRoles('Organizer'), (req, res) =>
+guarded.get('/org', authenticate, requireRole('organizer'), (req, res) =>
   res.json({ id: req.user.id, role: req.user.role })
 );
+guarded.get('/either', authenticate, requireRole('Student', 'Organizer'), (req, res) => res.json({ ok: true }));
+guarded.use(errorHandler);
 
 beforeAll(async () => {
   mongod = await MongoMemoryServer.create();
@@ -94,7 +97,7 @@ describe('login (TC-AUTH-01, TC-AUTH-07)', () => {
   });
 });
 
-describe('protect + authorizeRoles (TC-AUTH-05, TC-AUTH-06)', () => {
+describe('authenticate + requireRole (TC-AUTH-05, TC-AUTH-06)', () => {
   const sign = (user, opts) => jwt.sign({ id: user._id, role: user.role }, 'test-secret', opts);
   const mk = (role) => User.create({ ...student, email: `${role}@pesu.pes.edu`, role });
 
@@ -126,6 +129,29 @@ describe('protect + authorizeRoles (TC-AUTH-05, TC-AUTH-06)', () => {
     expect((await request(guarded).get('/org').set('Authorization', `Bearer ${token}`)).status).toBe(401);
   });
 
+  test('tampered token -> 401', async () => {
+    const org = await mk('Organizer');
+    const [header, , signature] = sign(org).split('.');
+    const payload = Buffer.from(JSON.stringify({ id: org._id, role: 'Organizer' })).toString('base64url');
+    const res = await request(guarded).get('/org').set('Authorization', `Bearer ${header}.${payload}.${signature}`);
+    expect(res.status).toBe(401);
+  });
+
+  test('401 and 403 use the team error format', async () => {
+    const stu = await mk('Student');
+    const noToken = await request(guarded).get('/org');
+    expect(noToken.body).toEqual({ error: { code: 'UNAUTHENTICATED', message: 'Please log in' } });
+    const denied = await request(guarded).get('/org').set('Authorization', `Bearer ${sign(stu)}`);
+    expect(denied.body.error.code).toBe('FORBIDDEN');
+  });
+
+  test('requireRole takes several roles and ignores case; old names are aliases', async () => {
+    const stu = await mk('Student');
+    expect((await request(guarded).get('/either').set('Authorization', `Bearer ${sign(stu)}`)).status).toBe(200);
+    expect(protect).toBe(authenticate);
+    expect(authorizeRoles).toBe(requireRole);
+  });
+
   test('expired token -> 401', async () => {
     const org = await mk('Organizer');
     const expired = sign(org, { expiresIn: -10 });
@@ -143,5 +169,5 @@ describe('protect + authorizeRoles (TC-AUTH-05, TC-AUTH-06)', () => {
 test('unknown route returns JSON 404', async () => {
   const res = await request(app).get('/api/nope');
   expect(res.status).toBe(404);
-  expect(res.body).toEqual({ message: 'Not found' });
+  expect(res.body).toEqual({ error: { code: 'NOT_FOUND', message: 'Not found' } });
 });
