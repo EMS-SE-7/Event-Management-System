@@ -30,7 +30,7 @@ Default port is 5000. macOS AirPlay Receiver also uses 5000, so on a Mac set `PO
 Organizers are created by a script, never by signup. Students can also be seeded for demos and tests.
 
 1. In `.env`, set `ORGANIZER_EMAILS` and/or `STUDENT_EMAILS` (comma-separated) and `SEED_PASSWORD` (a mock password for dev; change it for real use).
-2. Run `npm run seed`. Each organizer email gets an Organizer account and each student email a Student account, all with that password. (`npm run seed:organizers` runs the same script.)
+2. Run `npm run seed`. Each organizer email gets an Organizer account and each student email a Student account, all with that password.
 3. An email that is already registered is skipped, because someone else may have claimed it first. Check an organizer email is the right person, then run `npm run seed -- --force` to promote it. `--force` never changes students.
 
 ## Protecting your routes
