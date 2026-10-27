@@ -7,7 +7,8 @@
     "dev": "nodemon src/index.js",
     "start": "node src/index.js",
     "test": "jest",
-    "seed:organizers": "node src/scripts/seedOrganizers.js"
+    "seed": "node src/scripts/seedUsers.js",
+    "seed:organizers": "node src/scripts/seedUsers.js"
   },
   "keywords": [],
   "author": "",
