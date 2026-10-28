@@ -1,4 +1,4 @@
-import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
+import { Navigate, Route, Routes } from 'react-router-dom'
 import BrowseEventsPage from './pages/events/BrowseEventsPage.jsx'
 import EventDetailsPage from './pages/events/EventDetailsPage.jsx'
 import CreateEventPage from './pages/organizer/CreateEventPage.jsx'
@@ -14,45 +14,54 @@ function OrganizerRoute({ children }) {
   const role = localStorage.getItem('role')
 
   return token && role === 'Organizer'
-    ? children
+    ? <div className="attendance-app">{children}</div>
     : <Navigate to="/login" replace />
 }
 
 function App() {
   return (
-    <BrowserRouter>
-      <Routes>
-        {/* Event Management */}
-        <Route path="/" element={<Navigate to="/events" replace />} />
-        <Route path="/events" element={<BrowseEventsPage />} />
-        <Route path="/events/:id" element={<EventDetailsPage />} />
-        <Route path="/organizer/events/new" element={<CreateEventPage />} />
+    <Routes>
+      {/* Event Management */}
+      <Route path="/" element={<Navigate to="/events" replace />} />
+      <Route path="/events" element={<BrowseEventsPage />} />
+      <Route path="/events/:id" element={<EventDetailsPage />} />
+      <Route
+        path="/organizer/events/new"
+        element={<CreateEventPage />}
+      />
 
-        {/* Authentication */}
-        <Route path="/login" element={<LoginPage />} />
+      {/* Authentication */}
+      <Route
+        path="/login"
+        element={
+          <div className="attendance-app">
+            <LoginPage />
+          </div>
+        }
+      />
 
-        {/* Attendance */}
-        <Route
-          path="/organizer/attendance"
-          element={
-            <OrganizerRoute>
-              <AttendanceEventsPage />
-            </OrganizerRoute>
-          }
-        />
-        <Route
-          path="/organizer/events/:eventId/attendance"
-          element={
-            <OrganizerRoute>
-              <AttendancePage />
-            </OrganizerRoute>
-          }
-        />
+      {/* Attendance */}
+      <Route
+        path="/organizer/attendance"
+        element={
+          <OrganizerRoute>
+            <AttendanceEventsPage />
+          </OrganizerRoute>
+        }
+      />
 
-        {/* Unknown route */}
-        <Route path="*" element={<Navigate to="/events" replace />} />
-      </Routes>
-    </BrowserRouter>
+      <Route
+        path="/organizer/events/:eventId/attendance"
+        element={
+          <OrganizerRoute>
+            <AttendancePage />
+          </OrganizerRoute>
+        }
+      />
+
+      {/* Unknown route */}
+      <Route path="*" element={<Navigate to="/events" replace />} />
+    </Routes>
   )
 }
 

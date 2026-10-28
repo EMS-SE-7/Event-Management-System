@@ -1,5 +1,7 @@
-/* Overrides the Vite template layout from index.css and styles the attendance pages. */
-:root {
+/* Attendance pages only. Every rule is scoped under .attendance-app
+   so it does not change the Event pages. */
+
+.attendance-app {
   color-scheme: light;
   --bg: #f4f6fb;
   --card: #ffffff;
@@ -15,71 +17,354 @@
   --grey-bg: #f3f4f6;
 }
 
-body { background: var(--bg); color: var(--ink); margin: 0; }
-#root { width: 100%; max-width: none; border: none; text-align: left; display: block; min-height: 100vh; }
-h1, h2, h3 { color: var(--ink); letter-spacing: normal; }
+.attendance-app {
+  min-height: 100vh;
+  background: var(--bg);
+  color: var(--ink);
+}
 
-.app { min-height: 100vh; }
-.topbar { display: flex; justify-content: space-between; align-items: center; padding: 14px 32px; background: var(--card); border-bottom: 1px solid var(--line); }
-.topbar nav { display: flex; align-items: center; gap: 20px; }
-.topbar a { color: var(--ink); text-decoration: none; font-weight: 500; }
-.brand { font-weight: 700; font-size: 20px; color: var(--brand) !important; }
-.page { max-width: 900px; margin: 0 auto; padding: 32px 24px; }
-.page-title { margin: 8px 0 4px; font-size: 26px; }
-.muted { color: var(--muted); margin: 0 0 16px; }
-.small { font-size: 13px; margin: 0; }
-.error { color: var(--red); background: var(--red-bg); padding: 8px 12px; border-radius: 6px; }
-.back-link { color: var(--brand); text-decoration: none; font-weight: 500; }
-.right { text-align: right; }
+.attendance-app h1,
+.attendance-app h2,
+.attendance-app h3 {
+  color: var(--ink);
+  letter-spacing: normal;
+}
 
-.card { background: var(--card); border: 1px solid var(--line); border-radius: 12px; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05); }
+.attendance-app .app {
+  min-height: 100vh;
+}
 
-button { font: inherit; cursor: pointer; }
-.btn-primary { background: var(--brand); color: #fff; border: none; padding: 10px 16px; border-radius: 8px; font-weight: 600; }
-.btn-primary:hover { background: var(--brand-dark); }
-.link-btn { display: inline-block; text-decoration: none; text-align: center; }
-.btn-logout { background: transparent; border: 1px solid var(--line); padding: 6px 12px; border-radius: 8px; color: var(--ink); }
-.btn-logout:hover { background: var(--grey-bg); }
+.attendance-app .topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 32px;
+  background: var(--card);
+  border-bottom: 1px solid var(--line);
+}
 
-.login-wrap { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 24px; }
-.login-card { width: 100%; max-width: 380px; padding: 32px; display: flex; flex-direction: column; gap: 14px; }
-.login-card .muted { margin: 0; }
-.brand-big { margin: 0; color: var(--brand); font-size: 28px; }
-.login-card label { display: flex; flex-direction: column; gap: 6px; font-weight: 500; font-size: 14px; }
-.login-card input { padding: 10px 12px; font: inherit; border: 1px solid var(--line); border-radius: 8px; background: #fff; color: var(--ink); }
-.login-card input:focus { outline: 2px solid var(--brand); border-color: transparent; }
+.attendance-app .topbar nav {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
 
-.event-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 16px; }
-.event-card { padding: 20px; display: flex; flex-direction: column; gap: 4px; }
-.event-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; }
-.event-head h3 { margin: 0; font-size: 18px; }
+.attendance-app .topbar a {
+  color: var(--ink);
+  text-decoration: none;
+  font-weight: 500;
+}
 
-.badge { display: inline-block; padding: 3px 10px; border-radius: 999px; font-size: 12px; font-weight: 600; background: var(--grey-bg); color: var(--muted); white-space: nowrap; }
-.badge-present { background: var(--green-bg); color: var(--green); }
-.badge-absent { background: var(--red-bg); color: var(--red); }
-.badge-upcoming, .badge-ongoing { background: #e0e7ff; color: var(--brand-dark); }
-.badge-cancelled { background: var(--red-bg); color: var(--red); }
+.attendance-app .brand {
+  font-weight: 700;
+  font-size: 20px;
+  color: var(--brand) !important;
+}
 
-.summary { display: flex; gap: 12px; margin: 8px 0 20px; flex-wrap: wrap; }
-.chip { padding: 8px 14px; border-radius: 10px; font-size: 14px; background: var(--grey-bg); color: var(--muted); }
-.chip strong { font-size: 18px; margin-right: 4px; }
-.chip-present { background: var(--green-bg); color: var(--green); }
-.chip-absent { background: var(--red-bg); color: var(--red); }
+.attendance-app .page {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 32px 24px;
+}
 
-.table-card { overflow: hidden; }
-table { width: 100%; border-collapse: collapse; }
-th { text-align: left; font-size: 12px; text-transform: uppercase; letter-spacing: 0.04em; color: var(--muted); background: #fafafa; padding: 12px 16px; border-bottom: 1px solid var(--line); }
-th.right { text-align: right; }
-td { padding: 12px 16px; border-bottom: 1px solid var(--line); vertical-align: middle; }
-tbody tr:last-child td { border-bottom: none; }
+.attendance-app .page-title {
+  margin: 8px 0 4px;
+  font-size: 26px;
+}
 
-.student { display: flex; align-items: center; gap: 12px; }
-.avatar { width: 36px; height: 36px; border-radius: 50%; background: #e0e7ff; color: var(--brand-dark); display: flex; align-items: center; justify-content: center; font-weight: 700; }
-.student-name { font-weight: 600; }
+.attendance-app .muted {
+  color: var(--muted);
+  margin: 0 0 16px;
+}
 
-.btn-present, .btn-absent { padding: 7px 14px; border-radius: 8px; background: #fff; border: 1px solid; font-weight: 500; }
-.btn-absent { margin-left: 8px; }
-.btn-present { border-color: var(--green); color: var(--green); }
-.btn-absent { border-color: var(--red); color: var(--red); }
-.btn-present:hover, .btn-present.active { background: var(--green); color: #fff; }
-.btn-absent:hover, .btn-absent.active { background: var(--red); color: #fff; }
+.attendance-app .small {
+  font-size: 13px;
+  margin: 0;
+}
+
+.attendance-app .error {
+  color: var(--red);
+  background: var(--red-bg);
+  padding: 8px 12px;
+  border-radius: 6px;
+}
+
+.attendance-app .back-link {
+  color: var(--brand);
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.attendance-app .right {
+  text-align: right;
+}
+
+.attendance-app .card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.attendance-app button {
+  font: inherit;
+  cursor: pointer;
+}
+
+.attendance-app .btn-primary {
+  background: var(--brand);
+  color: #fff;
+  border: none;
+  padding: 10px 16px;
+  border-radius: 8px;
+  font-weight: 600;
+}
+
+.attendance-app .btn-primary:hover {
+  background: var(--brand-dark);
+}
+
+.attendance-app .link-btn {
+  display: inline-block;
+  text-decoration: none;
+  text-align: center;
+}
+
+.attendance-app .btn-logout {
+  background: transparent;
+  border: 1px solid var(--line);
+  padding: 6px 12px;
+  border-radius: 8px;
+  color: var(--ink);
+}
+
+.attendance-app .btn-logout:hover {
+  background: var(--grey-bg);
+}
+
+.attendance-app .login-wrap {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+.attendance-app .login-card {
+  width: 100%;
+  max-width: 380px;
+  padding: 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.attendance-app .login-card .muted {
+  margin: 0;
+}
+
+.attendance-app .brand-big {
+  margin: 0;
+  color: var(--brand);
+  font-size: 28px;
+}
+
+.attendance-app .login-card label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-weight: 500;
+  font-size: 14px;
+}
+
+.attendance-app .login-card input {
+  padding: 10px 12px;
+  font: inherit;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fff;
+  color: var(--ink);
+}
+
+.attendance-app .login-card input:focus {
+  outline: 2px solid var(--brand);
+  border-color: transparent;
+}
+
+.attendance-app .event-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 16px;
+}
+
+.attendance-app .event-card {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.attendance-app .event-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.attendance-app .event-head h3 {
+  margin: 0;
+  font-size: 18px;
+}
+
+.attendance-app .badge {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  background: var(--grey-bg);
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.attendance-app .badge-present {
+  background: var(--green-bg);
+  color: var(--green);
+}
+
+.attendance-app .badge-absent {
+  background: var(--red-bg);
+  color: var(--red);
+}
+
+.attendance-app .badge-upcoming,
+.attendance-app .badge-ongoing {
+  background: #e0e7ff;
+  color: var(--brand-dark);
+}
+
+.attendance-app .badge-cancelled {
+  background: var(--red-bg);
+  color: var(--red);
+}
+
+.attendance-app .summary {
+  display: flex;
+  gap: 12px;
+  margin: 8px 0 20px;
+  flex-wrap: wrap;
+}
+
+.attendance-app .chip {
+  padding: 8px 14px;
+  border-radius: 10px;
+  font-size: 14px;
+  background: var(--grey-bg);
+  color: var(--muted);
+}
+
+.attendance-app .chip strong {
+  font-size: 18px;
+  margin-right: 4px;
+}
+
+.attendance-app .chip-present {
+  background: var(--green-bg);
+  color: var(--green);
+}
+
+.attendance-app .chip-absent {
+  background: var(--red-bg);
+  color: var(--red);
+}
+
+.attendance-app .table-card {
+  overflow: hidden;
+}
+
+.attendance-app table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.attendance-app th {
+  text-align: left;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+  background: #fafafa;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--line);
+}
+
+.attendance-app th.right {
+  text-align: right;
+}
+
+.attendance-app td {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--line);
+  vertical-align: middle;
+}
+
+.attendance-app tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.attendance-app .student {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.attendance-app .avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: #e0e7ff;
+  color: var(--brand-dark);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+}
+
+.attendance-app .student-name {
+  font-weight: 600;
+}
+
+.attendance-app .btn-present,
+.attendance-app .btn-absent {
+  padding: 7px 14px;
+  border-radius: 8px;
+  background: #fff;
+  border: 1px solid;
+  font-weight: 500;
+}
+
+.attendance-app .btn-absent {
+  margin-left: 8px;
+}
+
+.attendance-app .btn-present {
+  border-color: var(--green);
+  color: var(--green);
+}
+
+.attendance-app .btn-absent {
+  border-color: var(--red);
+  color: var(--red);
+}
+
+.attendance-app .btn-present:hover,
+.attendance-app .btn-present.active {
+  background: var(--green);
+  color: #fff;
+}
+
+.attendance-app .btn-absent:hover,
+.attendance-app .btn-absent.active {
+  background: var(--red);
+  color: #fff;
+}
