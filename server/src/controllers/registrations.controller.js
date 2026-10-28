@@ -2,260 +2,174 @@ const mongoose = require('mongoose');
 const Event = require('../models/Event');
 const Registration = require('../models/Registration');
 const AppError = require('../utils/AppError');
-const { computeStatus } = require('../utils/eventStatus');
+const { computeStatus, withCalculatedFields } = require('../utils/eventStatus');
 
-// REG-01 to REG-06 and STATUS-03/STATUS-04
-// POST /api/registrations
-async function registerForEvent(req, res, next) {
-  let reservedEventId = null;
+// Checks in the SRS 5.4.2 order: status, deadline, capacity.
+// Error codes come from section 3 of the team integration guide.
+function assertOpenForRegistration(event, now) {
+  const status = computeStatus(event, now);
+  if (status === 'Cancelled') {
+    throw new AppError(409, 'EVENT_CANCELLED', 'This event is cancelled');
+  }
+  if (status !== 'Upcoming') {
+    throw new AppError(409, 'EVENT_NOT_UPCOMING', 'Registration is only open for upcoming events');
+  }
+  if (now >= event.registrationDeadline) {
+    throw new AppError(409, 'DEADLINE_PASSED', 'The registration deadline has passed');
+  }
+  if (event.registeredCount >= event.capacity) {
+    throw new AppError(409, 'EVENT_FULL', 'This event is full');
+  }
+}
+
+// POST /api/registrations (REG-01 to REG-06, STATUS-03, STATUS-04)
+// Authentication and the student role are checked by the route middleware.
+async function registerForEvent(req, res) {
+  const eventId = req.body && req.body.eventId;
+  if (!eventId) {
+    throw new AppError(400, 'VALIDATION_ERROR', 'eventId is required');
+  }
+  const event = mongoose.isValidObjectId(eventId) ? await Event.findById(eventId) : null;
+  if (!event) {
+    throw new AppError(404, 'NOT_FOUND', 'Event not found');
+  }
+
+  const now = new Date();
+  assertOpenForRegistration(event, now);
+
+  // A cancelled registration is reused, so the history keeps one record per student and event.
+  const existing = await Registration.findOne({ student: req.user.id, event: event._id });
+  if (existing && existing.status === 'Registered') {
+    throw new AppError(409, 'ALREADY_REGISTERED', 'You are already registered for this event');
+  }
+
+  // Take one seat atomically, so two students cannot take the last seat.
+  const seat = await Event.findOneAndUpdate(
+    {
+      _id: event._id,
+      status: 'Upcoming',
+      startDateTime: { $gt: now },
+      registrationDeadline: { $gt: now },
+      $expr: { $lt: ['$registeredCount', '$capacity'] },
+    },
+    { $inc: { registeredCount: 1 } },
+    { returnDocument: 'after' }
+  );
+  if (!seat) {
+    // Someone else changed the event since our first check: report the real reason.
+    const latest = await Event.findById(event._id);
+    if (!latest) {
+      throw new AppError(404, 'NOT_FOUND', 'Event not found');
+    }
+    assertOpenForRegistration(latest, new Date());
+    throw new AppError(409, 'EVENT_FULL', 'This event is full');
+  }
 
   try {
-    const { eventId } = req.body;
-    const studentId = req.user.id;
-
-    // Validate the event ID.
-    if (!eventId) {
-      throw new AppError(
-        400,
-        'VALIDATION_ERROR',
-        'Event ID is required'
+    let registration;
+    if (existing) {
+      registration = await Registration.findOneAndUpdate(
+        { _id: existing._id, status: 'Cancelled' },
+        { status: 'Registered', attendanceStatus: 'Not Marked' },
+        { returnDocument: 'after' }
       );
-    }
-
-    if (!mongoose.isValidObjectId(eventId)) {
-      throw new AppError(404, 'NOT_FOUND', 'Event not found');
-    }
-
-    // Find the event.
-    let event = await Event.findById(eventId);
-
-    if (!event) {
-      throw new AppError(404, 'NOT_FOUND', 'Event not found');
-    }
-
-    let now = new Date();
-
-    // Check 1: Cancelled events cannot accept registrations.
-    if (event.status === 'Cancelled') {
-      throw new AppError(
-        409,
-        'EVENT_CANCELLED',
-        'This event has been cancelled'
-      );
-    }
-
-    // Check 2: The event must still be upcoming.
-    if (computeStatus(event, now) !== 'Upcoming') {
-      throw new AppError(
-        409,
-        'EVENT_NOT_UPCOMING',
-        'This event is not upcoming'
-      );
-    }
-
-    // Check 3: The registration deadline must not have passed.
-    if (now >= event.registrationDeadline) {
-      throw new AppError(
-        409,
-        'DEADLINE_PASSED',
-        'The registration deadline has passed'
-      );
-    }
-
-    // Check 4: The event must have available seats.
-    if (event.registeredCount >= event.capacity) {
-      throw new AppError(
-        409,
-        'EVENT_FULL',
-        'This event is full'
-      );
-    }
-
-    // Check 5: Prevent duplicate registration.
-    const existingRegistration = await Registration.findOne({
-      student: studentId,
-      event: eventId,
-    });
-
-    if (existingRegistration) {
-      throw new AppError(
-        409,
-        'ALREADY_REGISTERED',
-        'You already have a registration record for this event'
-      );
-    }
-
-    // Atomically reserve one seat.
-    // The database condition prevents registeredCount from exceeding capacity.
-    now = new Date();
-
-    const reservedEvent = await Event.findOneAndUpdate(
-      {
-        _id: eventId,
-        status: { $ne: 'Cancelled' },
-        startDateTime: { $gt: now },
-        registrationDeadline: { $gt: now },
-        $expr: {
-          $lt: ['$registeredCount', '$capacity'],
-        },
-      },
-      {
-        $inc: { registeredCount: 1 },
-      },
-      {
-        new: true,
-        runValidators: true,
+      if (!registration) {
+        throw new AppError(409, 'ALREADY_REGISTERED', 'You are already registered for this event');
       }
-    );
-
-    // If reservation fails, determine the correct reason.
-    if (!reservedEvent) {
-      event = await Event.findById(eventId);
-
-      if (!event) {
-        throw new AppError(404, 'NOT_FOUND', 'Event not found');
-      }
-
-      now = new Date();
-
-      if (event.status === 'Cancelled') {
-        throw new AppError(
-          409,
-          'EVENT_CANCELLED',
-          'This event has been cancelled'
-        );
-      }
-
-      if (computeStatus(event, now) !== 'Upcoming') {
-        throw new AppError(
-          409,
-          'EVENT_NOT_UPCOMING',
-          'This event is not upcoming'
-        );
-      }
-
-      if (now >= event.registrationDeadline) {
-        throw new AppError(
-          409,
-          'DEADLINE_PASSED',
-          'The registration deadline has passed'
-        );
-      }
-
-      throw new AppError(
-        409,
-        'EVENT_FULL',
-        'This event is full'
-      );
+    } else {
+      registration = await Registration.create({ student: req.user.id, event: event._id });
     }
-
-    reservedEventId = reservedEvent._id;
-
-    // Create the registration record.
-    const registration = await Registration.create({
-      student: studentId,
-      event: eventId,
-    });
-
-    // Registration succeeded; no rollback is needed.
-    reservedEventId = null;
-
-    return res.status(201).json({
-      message: 'Successfully registered for the event',
-      data: {
-        ...registration.toObject(),
-        student: String(registration.student),
-        event: String(registration.event),
-      },
-    });
+    res.status(201).json({ data: registration });
   } catch (error) {
-    // If creating the registration failed after reserving a seat,
-    // release that seat.
-    if (reservedEventId) {
-      try {
-        await Event.updateOne(
-          {
-            _id: reservedEventId,
-            registeredCount: { $gt: 0 },
-          },
-          {
-            $inc: { registeredCount: -1 },
-          }
-        );
-      } catch (rollbackError) {
-        console.error(
-          'Failed to release reserved event seat:',
-          rollbackError
-        );
-      }
-    }
-
-    // The unique compound index protects against concurrent duplicate registrations.
+    // Give the seat back if the registration could not be saved.
+    await Event.updateOne({ _id: event._id, registeredCount: { $gt: 0 } }, { $inc: { registeredCount: -1 } });
     if (error.code === 11000) {
-      return next(
-        new AppError(
-          409,
-          'ALREADY_REGISTERED',
-          'You already have a registration record for this event'
-        )
-      );
+      throw new AppError(409, 'ALREADY_REGISTERED', 'You are already registered for this event');
     }
-
-    return next(error);
+    throw error;
   }
 }
 
-// PART-01, PART-02, PART-03 and PART-04
-// GET /api/events/:eventId/participants
-async function getEventParticipants(req, res, next) {
-  try {
-    // participants.routes.js uses the parameter name eventId.
-    const { eventId } = req.params;
-
-    if (!mongoose.isValidObjectId(eventId)) {
-      throw new AppError(404, 'NOT_FOUND', 'Event not found');
-    }
-
-    const event = await Event.findById(eventId);
-
-    if (!event) {
-      throw new AppError(404, 'NOT_FOUND', 'Event not found');
-    }
-
-    // Only the organizer who owns this event may view its participants.
-    if (String(event.organizer) !== String(req.user.id)) {
-      throw new AppError(
-        403,
-        'FORBIDDEN',
-        'You are not authorized to view this event participants'
-      );
-    }
-
-    // Return only active registrations for this event.
-    let query = Registration.find({
-      event: event._id,
-      status: 'Registered',
-    }).sort({ createdAt: -1 });
-
-    // Populate student details when the User model is registered.
-    if (mongoose.models.User) {
-      query = query.populate('student', 'name email');
-    }
-
-    const registrations = await query.lean();
-
-    return res.status(200).json({
-      data: registrations,
-      meta: {
-        total: registrations.length,
-      },
-    });
-  } catch (error) {
-    return next(error);
+// PATCH /api/registrations/:id/cancel (REG-07, REG-08)
+// The record is kept with status Cancelled (history), and the seat is given back.
+async function cancelRegistration(req, res) {
+  const { id } = req.params;
+  const registration = mongoose.isValidObjectId(id) ? await Registration.findById(id) : null;
+  if (!registration) {
+    throw new AppError(404, 'NOT_FOUND', 'Registration not found');
   }
+  if (String(registration.student) !== String(req.user.id)) {
+    throw new AppError(403, 'FORBIDDEN', 'You can only cancel your own registration');
+  }
+  if (registration.status === 'Cancelled') {
+    throw new AppError(409, 'ALREADY_CANCELLED', 'This registration is already cancelled');
+  }
+
+  const event = await Event.findById(registration.event);
+  if (event) {
+    const current = computeStatus(event);
+    if (current === 'Ongoing' || current === 'Completed') {
+      throw new AppError(409, 'EVENT_NOT_UPCOMING', 'A registration cannot be cancelled once the event has started');
+    }
+  }
+
+  // Only one request can switch Registered -> Cancelled, so the seat is given back exactly once.
+  const cancelled = await Registration.findOneAndUpdate(
+    { _id: registration._id, status: 'Registered' },
+    { status: 'Cancelled' },
+    { returnDocument: 'after' }
+  );
+  if (!cancelled) {
+    throw new AppError(409, 'ALREADY_CANCELLED', 'This registration is already cancelled');
+  }
+  await Event.updateOne({ _id: registration.event, registeredCount: { $gt: 0 } }, { $inc: { registeredCount: -1 } });
+
+  res.json({ data: cancelled });
 }
 
-module.exports = {
-  registerForEvent,
-  getEventParticipants,
-};
+// GET /api/registrations/mine (HIST-01 to HIST-04)
+// Optional: ?status=Registered or ?status=Cancelled
+async function listMyRegistrations(req, res) {
+  const filter = { student: req.user.id };
+  const wanted = req.query.status;
+  if (wanted !== undefined) {
+    if (wanted !== 'Registered' && wanted !== 'Cancelled') {
+      throw new AppError(400, 'VALIDATION_ERROR', 'status must be Registered or Cancelled');
+    }
+    filter.status = wanted;
+  }
+
+  const registrations = await Registration.find(filter).sort({ createdAt: -1 }).populate('event').lean();
+  const now = new Date();
+  const data = registrations.map((registration) => ({
+    ...registration,
+    isActive: registration.status === 'Registered', // HIST-04
+    event: registration.event ? withCalculatedFields(registration.event, now) : null, // HIST-03
+  }));
+
+  res.json({ data, meta: { total: data.length } });
+}
+
+// GET /api/events/:eventId/participants (PART-01 to PART-04)
+// Role is checked by the route middleware; ownership is checked here (403).
+async function getEventParticipants(req, res) {
+  const { eventId } = req.params;
+  const event = mongoose.isValidObjectId(eventId) ? await Event.findById(eventId) : null;
+  if (!event) {
+    throw new AppError(404, 'NOT_FOUND', 'Event not found');
+  }
+  if (String(event.organizer) !== String(req.user.id)) {
+    throw new AppError(403, 'FORBIDDEN', 'You can only view participants of your own events');
+  }
+
+  let query = Registration.find({ event: event._id, status: 'Registered' }).sort({ createdAt: -1 });
+  // The User model belongs to the auth module. Fill in name and email only once it is registered.
+  if (mongoose.models.User) {
+    query = query.populate('student', 'name email');
+  }
+  const registrations = await query.lean();
+
+  res.json({ data: registrations, meta: { total: registrations.length } });
+}
+
+module.exports = { registerForEvent, cancelRegistration, listMyRegistrations, getEventParticipants };
