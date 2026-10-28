@@ -90,7 +90,7 @@ describe('route guards', () => {
     renderAt('/organizer/events/new')
 
     expect(await screen.findByRole('heading', { name: 'Student Dashboard' })).toBeInTheDocument()
-    expect(screen.queryByRole('heading', { name: 'Create Event' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('heading', { name: 'Create event' })).not.toBeInTheDocument()
   })
 
   test('organizer reaches an organizer route', async () => {
@@ -98,7 +98,7 @@ describe('route guards', () => {
     mockServer({ 'GET /auth/me': () => reply(200, { user: organizer }) })
     renderAt('/organizer/events/new')
 
-    expect(await screen.findByRole('heading', { name: 'Create Event' })).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { name: 'Create event' })).toBeInTheDocument()
   })
 })
 

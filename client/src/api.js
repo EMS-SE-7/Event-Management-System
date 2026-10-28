@@ -13,9 +13,11 @@ export const setToken = (token) => localStorage.setItem(TOKEN_KEY, token)
 export const clearToken = () => localStorage.removeItem(TOKEN_KEY)
 
 export class ApiError extends Error {
-  constructor(status, message) {
+  constructor(status, message, { code, details } = {}) {
     super(message)
     this.status = status
+    this.code = code
+    this.details = details
   }
 }
 
@@ -40,7 +42,7 @@ export async function api(path, { method = 'GET', body } = {}) {
   if (!res.ok) {
     // Only a request that carried a token means the session died; a failed login has none.
     if (res.status === 401 && token) onUnauthorized()
-    throw new ApiError(res.status, data.error?.message || 'Something went wrong')
+    throw new ApiError(res.status, data.error?.message || 'Something went wrong', data.error)
   }
   return data
 }

@@ -2,8 +2,11 @@ import { Navigate, Route, Routes } from 'react-router-dom'
 import { homeFor, useAuth } from './auth-context'
 import Navbar from './components/Navbar'
 import { OrganizerRoute, ProtectedRoute } from './components/guards'
+import BrowseEventsPage from './pages/events/BrowseEventsPage'
+import EventDetailsPage from './pages/events/EventDetailsPage'
 import { OrganizerDashboard, Placeholder, StudentDashboard } from './pages/Home'
 import Login from './pages/Login'
+import CreateEventPage from './pages/organizer/CreateEventPage'
 import Register from './pages/Register'
 import './App.css'
 
@@ -22,15 +25,16 @@ export default function App() {
         <Route path="/register" element={<Register />} />
 
         <Route element={<ProtectedRoute />}>
+          <Route path="/events" element={<BrowseEventsPage />} />
+          <Route path="/events/:id" element={<EventDetailsPage />} />
           <Route path="/student" element={<StudentDashboard />} />
-          <Route path="/student/events" element={<Placeholder title="Browse Events" />} />
           <Route path="/student/registrations" element={<Placeholder title="My Registrations" />} />
         </Route>
 
         <Route element={<OrganizerRoute />}>
           <Route path="/organizer" element={<OrganizerDashboard />} />
           <Route path="/organizer/events" element={<Placeholder title="My Events" />} />
-          <Route path="/organizer/events/new" element={<Placeholder title="Create Event" />} />
+          <Route path="/organizer/events/new" element={<CreateEventPage />} />
         </Route>
 
         <Route path="*" element={<RootRedirect />} />

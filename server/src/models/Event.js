@@ -3,11 +3,14 @@ const mongoose = require('mongoose');
 const CATEGORIES = ['Technical', 'Cultural', 'Sports', 'Workshop', 'Seminar', 'Club Activity', 'Other'];
 const STORED_STATUSES = ['Upcoming', 'Cancelled'];
 
-// "In the future" is only checked when the event is first created (EVENT-08),
-// so an event that has already started can still be saved later (e.g. cancelled).
-function inFutureWhenCreated(value) {
-  if (!this.isNew) return true;
-  return value instanceof Date && value.getTime() > Date.now();
+// A date must be in the future when the event is created, or when that date is
+// changed in an edit. Untouched dates on an existing event are not re-checked,
+// so an event that has already started can still be cancelled (EVENT-08).
+function inFutureWhenChanged(path) {
+  return function (value) {
+    if (!this.isNew && !this.isModified(path)) return true;
+    return value instanceof Date && value.getTime() > Date.now();
+  };
 }
 
 const eventSchema = new mongoose.Schema(
@@ -40,7 +43,7 @@ const eventSchema = new mongoose.Schema(
     startDateTime: {
       type: Date,
       required: [true, 'Start date and time is required'],
-      validate: { validator: inFutureWhenCreated, message: 'Start date and time must be in the future' },
+      validate: { validator: inFutureWhenChanged('startDateTime'), message: 'Start date and time must be in the future' },
     },
     endDateTime: {
       type: Date,
@@ -57,7 +60,7 @@ const eventSchema = new mongoose.Schema(
       type: Date,
       required: [true, 'Registration deadline is required'],
       validate: [
-        { validator: inFutureWhenCreated, message: 'Registration deadline must be in the future' },
+        { validator: inFutureWhenChanged('registrationDeadline'), message: 'Registration deadline must be in the future' },
         {
           validator: function (value) {
             if (!this.startDateTime || !value) return true;
@@ -105,6 +108,20 @@ const eventSchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
+
+// On edits, re-check rules that involve more than one field (EVENT-08).
+eventSchema.pre('validate', function () {
+  if (this.isNew) return;
+  if (this.startDateTime && this.endDateTime && this.endDateTime <= this.startDateTime) {
+    this.invalidate('endDateTime', 'End date and time must be after the start');
+  }
+  if (this.startDateTime && this.registrationDeadline && this.registrationDeadline > this.startDateTime) {
+    this.invalidate('registrationDeadline', 'Registration deadline cannot be after the start');
+  }
+  if (this.capacity != null && this.registeredCount > this.capacity) {
+    this.invalidate('capacity', 'Capacity cannot be lower than the number of registered students');
+  }
+});
 
 const Event = mongoose.model('Event', eventSchema);
 
