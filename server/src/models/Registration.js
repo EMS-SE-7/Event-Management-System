@@ -1,4 +1,3 @@
-
 const mongoose = require('mongoose');
 
 const REGISTRATION_STATUSES = ['Registered', 'Cancelled'];
@@ -42,6 +41,14 @@ const registrationSchema = new mongoose.Schema(
       default: 'Not Marked',
       required: true,
     },
+
+    // Attendance audit information.
+    attendanceMarkedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+    },
+
+    attendanceMarkedAt: Date,
   },
   {
     timestamps: true,

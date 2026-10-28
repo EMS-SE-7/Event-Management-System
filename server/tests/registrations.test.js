@@ -186,8 +186,17 @@ describe('POST /api/registrations', () => {
 describe('GET /api/events/:eventId/participants', () => {
   test('TC-PART-01: the organizer sees the participants of their event with name and email', async () => {
     const event = await createEvent();
-    const asha = await User.create({ name: 'Asha', email: 'asha@pes.edu' });
-    const ravi = await User.create({ name: 'Ravi', email: 'ravi@pes.edu' });
+const asha = await User.create({
+  name: 'Asha',
+  email: 'asha@pes.edu',
+  password: 'password123'
+});
+
+const ravi = await User.create({
+  name: 'Ravi',
+  email: 'ravi@pes.edu',
+  password: 'password123'
+});
     await Registration.create({ student: asha._id, event: event._id });
     await Registration.create({ student: ravi._id, event: event._id });
 
@@ -205,9 +214,23 @@ describe('GET /api/events/:eventId/participants', () => {
   test('TC-PART-04: only participants of this event are returned, and cancelled ones are left out', async () => {
     const event = await createEvent();
     const otherEvent = await createEvent({ title: 'Another Event' });
-    const asha = await User.create({ name: 'Asha', email: 'asha@pes.edu' });
-    const ravi = await User.create({ name: 'Ravi', email: 'ravi@pes.edu' });
-    const meena = await User.create({ name: 'Meena', email: 'meena@pes.edu' });
+const asha = await User.create({
+  name: 'Asha',
+  email: 'asha@pes.edu',
+  password: 'password123'
+});
+
+const ravi = await User.create({
+  name: 'Ravi',
+  email: 'ravi@pes.edu',
+  password: 'password123'
+});
+
+const meena = await User.create({
+  name: 'Meena',
+  email: 'meena@pes.edu',
+  password: 'password123'
+});
     await Registration.create({ student: asha._id, event: event._id });
     await Registration.create({ student: ravi._id, event: otherEvent._id });
     await Registration.create({ student: meena._id, event: event._id, status: 'Cancelled' });
