@@ -1,5 +1,5 @@
 const express = require('express');
-const { authenticate, requireRole } = require('../middleware/authStub');
+const { authenticate, requireRole } = require('../middleware/auth');
 const {
   createEvent, listEvents, getEvent, listMyEvents, updateEvent, cancelEvent,
 } = require('../controllers/events.controller');
