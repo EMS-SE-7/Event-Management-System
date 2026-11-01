@@ -68,3 +68,25 @@ fetch('/api/...', {
   headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
 });
 ```
+
+## Event routes
+
+All need a token. "Owner" means the organizer who created the event.
+
+| Method | Path | Who | Notes |
+|---|---|---|---|
+| GET | `/api/events` | signed in | `?q=` search (title, description, venue), `?category=`, `?status=` (Upcoming, Ongoing, Completed, Cancelled), `?page=`, `?limit=` (default 20, max 100) |
+| GET | `/api/events/mine` | organizer | the organizer's own events, same paging |
+| GET | `/api/events/:id` | signed in | one event |
+| POST | `/api/events` | organizer | create |
+| PATCH | `/api/events/:id` | owner | edit; send only the fields that change |
+| PATCH | `/api/events/:id/cancel` | owner | cancel; the event is kept with status Cancelled |
+
+Every event comes back with calculated fields: `status`, `seatsLeft`, `isFull`, `registrationOpen`.
+Editing or cancelling a cancelled event returns `409 EVENT_CANCELLED`; a completed one returns `409 EVENT_NOT_UPCOMING`.
+
+## Seeding demo events
+
+After `npm run seed`, run `npm run seed:events`. It creates six events split between the seeded organizers:
+upcoming with seats, upcoming with 2 seats, full, cancelled, past its registration deadline, and completed with
+Present / Absent / Not Marked attendance. Running it again replaces those events.

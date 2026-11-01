@@ -1,11 +1,13 @@
 import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { getEvent } from '../../api/events.js'
+import { ROLES, useAuth } from '../../auth-context'
 import StatusBadge from '../../components/StatusBadge.jsx'
 import RegisterButton from '../../components/RegisterButton.jsx'
 import { formatDate, seatsText } from '../../utils/format.js'
 
 function EventDetails({ id }) {
+  const { user } = useAuth()
   const [event, setEvent] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
@@ -51,6 +53,8 @@ function EventDetails({ id }) {
     )
   }
 
+  const isOwner = user?.role === ROLES.ORGANIZER && String(event.organizer) === String(user.id)
+
   return (
     <article className="event-details">
       <div className="event-card-head">
@@ -78,9 +82,21 @@ function EventDetails({ id }) {
         {event.registrationOpen ? 'Registration is open' : 'Registration is closed'}
       </p>
 
-      <div className="register-slot">
-        <RegisterButton event={event} onRegistered={handleRegistered} />
-      </div>
+      {/* Students register; the organizer who owns the event gets management links instead. */}
+      {user?.role !== ROLES.ORGANIZER && (
+        <div className="register-slot">
+          <RegisterButton event={event} onRegistered={handleRegistered} />
+        </div>
+      )}
+      {isOwner && (
+        <p className="card-actions">
+          {(event.status === 'Upcoming' || event.status === 'Ongoing') && (
+            <Link to={`/organizer/events/${event._id}/edit`} className="button">Edit or cancel</Link>
+          )}
+          <Link to={`/organizer/events/${event._id}/attendance`}>Attendance</Link>
+          <Link to={`/organizer/events/${event._id}/report`}>Report</Link>
+        </p>
+      )}
     </article>
   )
 }

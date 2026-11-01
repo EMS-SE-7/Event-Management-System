@@ -7,6 +7,8 @@ import EventDetailsPage from './pages/events/EventDetailsPage'
 import { OrganizerDashboard, Placeholder, StudentDashboard } from './pages/Home'
 import Login from './pages/Login'
 import CreateEventPage from './pages/organizer/CreateEventPage'
+import EditEventPage from './pages/organizer/EditEventPage'
+import MyEventsPage from './pages/organizer/MyEventsPage'
 import Register from './pages/Register'
 import AttendanceEventsPage from './pages/AttendanceEventsPage'
 import AttendancePage from './pages/AttendancePage'
@@ -37,8 +39,9 @@ export default function App() {
 
         <Route element={<OrganizerRoute />}>
           <Route path="/organizer" element={<OrganizerDashboard />} />
-          <Route path="/organizer/events" element={<Placeholder title="My Events" />} />
+          <Route path="/organizer/events" element={<MyEventsPage />} />
           <Route path="/organizer/events/new" element={<CreateEventPage />} />
+          <Route path="/organizer/events/:id/edit" element={<EditEventPage />} />
           <Route path="/organizer/attendance" element={<div className="attendance-app"><AttendanceEventsPage /></div>} />
           <Route path="/organizer/events/:eventId/attendance" element={<div className="attendance-app"><AttendancePage /></div>} />
           <Route path="/organizer/reports" element={<div className="attendance-app"><ReportsPage /></div>} />
