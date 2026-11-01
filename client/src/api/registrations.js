@@ -3,6 +3,8 @@
 // Demo mode (default): registrations are simulated in memory, no server needed.
 // Real mode: client/.env.local contains   VITE_USE_MOCK=false   (same switch as api/events.js).
 
+import { api } from '../api.js'
+
 const useMock = import.meta.env.VITE_USE_MOCK !== 'false'
 
 function makeError(code, message) {
@@ -24,28 +26,9 @@ async function mockRegister(eventId) {
 }
 
 // ---- Real mode ----
-// Until the login module is merged, the server uses a stub login: these headers make the
-// request come from a student. Once real login exists, the saved token is sent instead.
-const DEMO_STUDENT_ID = '000000000000000000000100'
-
-function authHeaders() {
-  const token = localStorage.getItem('token')
-  if (token) return { Authorization: `Bearer ${token}` }
-  return { 'x-stub-role': 'student', 'x-stub-user-id': DEMO_STUDENT_ID }
-}
-
-async function httpRegister(eventId) {
-  const response = await fetch('/api/registrations', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', ...authHeaders() },
-    body: JSON.stringify({ eventId }),
-  })
-  const body = await response.json().catch(() => null)
-  if (!response.ok) {
-    // The server answers errors as { error: { code, message } }
-    throw makeError(body?.error?.code, body?.error?.message || 'Request failed')
-  }
-  return body
+// The shared helper in ../api.js sends the saved login token and throws an error carrying error.code.
+function httpRegister(eventId) {
+  return api('/registrations', { method: 'POST', body: { eventId } })
 }
 
 export const registerForEvent = useMock ? mockRegister : httpRegister

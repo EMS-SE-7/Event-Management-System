@@ -27,7 +27,7 @@ function EventDetails({ id }) {
     }
   }, [id])
 
-    // After a successful registration, show one seat fewer without reloading.
+  // After a successful registration, show one seat fewer without reloading.
   function handleRegistered() {
     setEvent((current) => {
       const seatsLeft = Math.max((current.seatsLeft ?? 1) - 1, 0)
@@ -78,7 +78,7 @@ function EventDetails({ id }) {
         {event.registrationOpen ? 'Registration is open' : 'Registration is closed'}
       </p>
 
-            <div className="register-slot">
+      <div className="register-slot">
         <RegisterButton event={event} onRegistered={handleRegistered} />
       </div>
     </article>

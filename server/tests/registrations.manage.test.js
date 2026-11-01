@@ -3,14 +3,24 @@ const mongoose = require('mongoose');
 const app = require('../src/index');
 const Event = require('../src/models/Event');
 const Registration = require('../src/models/Registration');
-const { DEFAULT_USER_ID } = require('../src/middleware/authStub');
+const { createUser } = require('./helpers/auth');
 const db = require('./helpers/db');
 
 const DAY = 24 * 60 * 60 * 1000;
 const HOUR = 60 * 60 * 1000;
 
-const STUDENT_ID = new mongoose.Types.ObjectId().toString();
-const OTHER_STUDENT_ID = new mongoose.Types.ObjectId().toString();
+// Real users with signed tokens, so requests go through the real auth middleware.
+let STUDENT_ID, OTHER_STUDENT_ID, organizer;
+const authHeaderFor = {};
+beforeEach(async () => {
+  organizer = await createUser('Organizer');
+  const first = await createUser('Student');
+  const second = await createUser('Student');
+  STUDENT_ID = String(first.user._id);
+  OTHER_STUDENT_ID = String(second.user._id);
+  authHeaderFor[STUDENT_ID] = first.header;
+  authHeaderFor[OTHER_STUDENT_ID] = second.header;
+});
 
 // Inserted directly so tests can also create started or cancelled events.
 async function createEvent(overrides = {}) {
@@ -26,14 +36,14 @@ async function createEvent(overrides = {}) {
     capacity: 10,
     registeredCount: 0,
     status: 'Upcoming',
-    organizer: new mongoose.Types.ObjectId(DEFAULT_USER_ID),
+    organizer: organizer.user._id,
     ...overrides,
   });
   return Event.findById(result.insertedId);
 }
 
 function student(studentId) {
-  return { 'x-stub-role': 'student', 'x-stub-user-id': studentId };
+  return { Authorization: authHeaderFor[studentId] };
 }
 
 function register(eventId, studentId = STUDENT_ID) {
@@ -114,7 +124,7 @@ describe('PATCH /api/registrations/:id/cancel', () => {
 
     const res = await request(app)
       .patch(`/api/registrations/${registered.body.data._id}/cancel`)
-      .set('x-stub-role', 'organizer');
+      .set('Authorization', organizer.header);
 
     expect(res.status).toBe(403);
   });
@@ -125,7 +135,7 @@ describe('PATCH /api/registrations/:id/cancel', () => {
 
     const res = await request(app)
       .patch(`/api/registrations/${registered.body.data._id}/cancel`)
-      .set('x-stub-role', 'none');
+      ;
 
     expect(res.status).toBe(401);
   });
@@ -271,10 +281,10 @@ describe('GET /api/registrations/mine', () => {
   });
 
   test('TC-HIST-01: organizers and logged-out users cannot read a student history', async () => {
-    const organizer = await request(app).get('/api/registrations/mine').set('x-stub-role', 'organizer');
-    const loggedOut = await request(app).get('/api/registrations/mine').set('x-stub-role', 'none');
+    const asOrganizer = await request(app).get('/api/registrations/mine').set('Authorization', organizer.header);
+    const loggedOut = await request(app).get('/api/registrations/mine');
 
-    expect(organizer.status).toBe(403);
+    expect(asOrganizer.status).toBe(403);
     expect(loggedOut.status).toBe(401);
   });
 });
