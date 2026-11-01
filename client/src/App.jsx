@@ -5,9 +5,11 @@ import CreateEventPage from './pages/organizer/CreateEventPage.jsx'
 import LoginPage from './pages/LoginPage'
 import AttendanceEventsPage from './pages/AttendanceEventsPage'
 import AttendancePage from './pages/AttendancePage'
+import ReportsPage from './pages/ReportsPage'
+import EventReportPage from './pages/EventReportPage'
 import './App.css'
 
-// Only organizers can open the attendance pages.
+// Only organizers can open the attendance and report pages.
 // The real authorization check is done on the server.
 function OrganizerRoute({ children }) {
   const token = localStorage.getItem('token')
@@ -55,6 +57,25 @@ function App() {
         element={
           <OrganizerRoute>
             <AttendancePage />
+          </OrganizerRoute>
+        }
+      />
+
+      {/* Reports */}
+      <Route
+        path="/organizer/reports"
+        element={
+          <OrganizerRoute>
+            <ReportsPage />
+          </OrganizerRoute>
+        }
+      />
+
+      <Route
+        path="/organizer/events/:eventId/report"
+        element={
+          <OrganizerRoute>
+            <EventReportPage />
           </OrganizerRoute>
         }
       />

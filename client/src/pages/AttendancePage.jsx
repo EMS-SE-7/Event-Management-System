@@ -50,6 +50,7 @@ export default function AttendancePage() {
     <>
       <Link to="/organizer/attendance" className="back-link">&larr; Back to events</Link>
       <h2 className="page-title">{eventTitle}</h2>
+      <Link to={`/organizer/events/${eventId}/report`}>View report</Link>
       <p className="muted">Mark each registered student as Present or Absent. You can change it any time.</p>
 
       {error && <p role="alert" className="error">{error}</p>}

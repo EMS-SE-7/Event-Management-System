@@ -368,3 +368,37 @@
   background: var(--red);
   color: #fff;
 }
+/* Report pages */
+.attendance-app .stat-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.attendance-app .stat-card {
+  padding: 16px;
+}
+
+.attendance-app .stat-value {
+  font-size: 26px;
+  font-weight: 700;
+  margin: 4px 0;
+}
+
+.attendance-app .progress {
+  display: flex;
+  height: 12px;
+  border-radius: 999px;
+  overflow: hidden;
+  background: var(--grey-bg);
+  margin-bottom: 20px;
+}
+
+.attendance-app .progress-present {
+  background: var(--green);
+}
+
+.attendance-app .progress-absent {
+  background: var(--red);
+}
