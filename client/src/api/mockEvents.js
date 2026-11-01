@@ -175,3 +175,53 @@ export async function createEvent(input) {
   stored.push(created)
   return { data: withCalculatedFields(created) }
 }
+
+// In demo mode every sample event belongs to the demo organizer.
+export async function listMyEvents({ page = 1, limit = 20 } = {}) {
+  return listEvents({ page, limit })
+}
+
+function notFound() {
+  const error = new Error('Event not found')
+  error.code = 'NOT_FOUND'
+  return error
+}
+
+function rejectIfLocked(found, action) {
+  const { status } = withCalculatedFields(found)
+  if (status === 'Cancelled' || status === 'Completed') {
+    const error = new Error(`A ${status.toLowerCase()} event cannot be ${action}`)
+    error.code = status === 'Cancelled' ? 'EVENT_CANCELLED' : 'EVENT_NOT_UPCOMING'
+    throw error
+  }
+}
+
+// Same checks as the server: the merged event must still pass the create rules.
+export async function updateEvent(id, changes) {
+  await delay()
+  const found = stored.find((e) => e._id === id)
+  if (!found) throw notFound()
+  rejectIfLocked(found, 'edited')
+  const merged = { ...found, ...changes }
+  const errors = validate(merged)
+  if (Number(merged.capacity) < found.registeredCount) {
+    errors.capacity = 'Capacity cannot be lower than the number of registered students'
+  }
+  if (Object.keys(errors).length > 0) {
+    const error = new Error('Some fields are missing or invalid')
+    error.code = 'VALIDATION_ERROR'
+    error.details = errors
+    throw error
+  }
+  Object.assign(found, changes, { capacity: Number(merged.capacity) })
+  return { data: withCalculatedFields(found) }
+}
+
+export async function cancelEvent(id) {
+  await delay()
+  const found = stored.find((e) => e._id === id)
+  if (!found) throw notFound()
+  rejectIfLocked(found, 'cancelled')
+  found.status = 'Cancelled'
+  return { data: withCalculatedFields(found) }
+}
