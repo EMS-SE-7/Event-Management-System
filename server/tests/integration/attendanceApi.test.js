@@ -6,6 +6,8 @@ jest.mock('../../src/models/Registration', () => ({
   countDocuments: jest.fn()
 }));
 jest.mock('../../src/models/Event', () => ({ find: jest.fn(), findById: jest.fn() }));
+// The real auth middleware loads the user from the token's id, so User is mocked too.
+jest.mock('../../src/models/User', () => ({ findById: jest.fn() }));
 
 process.env.JWT_SECRET = 'test-secret';
 
@@ -14,16 +16,26 @@ const jwt = require('jsonwebtoken');
 const app = require('../../src/index');
 const Registration = require('../../src/models/Registration');
 const Event = require('../../src/models/Event');
+const User = require('../../src/models/User');
 
 const tokenFor = (id, role, secret = 'test-secret') => jwt.sign({ id, role }, secret);
 const organizer = `Bearer ${tokenFor('org1', 'Organizer')}`;
 const student = `Bearer ${tokenFor('stu1', 'Student')}`;
 
-beforeEach(() => jest.resetAllMocks());
+const USERS = {
+  org1: { id: 'org1', role: 'Organizer' },
+  org2: { id: 'org2', role: 'Organizer' },
+  stu1: { id: 'stu1', role: 'Student' },
+};
+
+beforeEach(() => {
+  jest.resetAllMocks();
+  User.findById.mockImplementation(async (id) => USERS[id] || null);
+});
 
 describe('PATCH /api/attendance/:registrationId', () => {
   const mockOwnedRegistration = () => {
-    const reg = { event: 'e1', status: 'Active', attendanceStatus: 'Not Marked', save: jest.fn() };
+    const reg = { event: 'e1', status: 'Registered', attendanceStatus: 'Not Marked', save: jest.fn() };
     Registration.findById.mockResolvedValue(reg);
     Event.findById.mockResolvedValue({ organizer: 'org1', status: 'Upcoming' });
     return reg;
@@ -90,7 +102,7 @@ describe('PATCH /api/attendance/:registrationId', () => {
   });
 
   test('403 when a different organizer tries it (ATT-06)', async () => {
-    const reg = { event: 'e1', status: 'Active', save: jest.fn() };
+    const reg = { event: 'e1', status: 'Registered', save: jest.fn() };
     Registration.findById.mockResolvedValue(reg);
     Event.findById.mockResolvedValue({ organizer: 'org2', status: 'Upcoming' });
 

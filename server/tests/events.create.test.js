@@ -2,7 +2,7 @@ const request = require('supertest');
 const mongoose = require('mongoose');
 const app = require('../src/index');
 const Event = require('../src/models/Event');
-const { DEFAULT_USER_ID } = require('../src/middleware/authStub');
+const { createUser } = require('./helpers/auth');
 const db = require('./helpers/db');
 
 const DAY = 24 * 60 * 60 * 1000;
@@ -27,9 +27,16 @@ beforeAll(db.connect, 120000);
 afterEach(db.clear);
 afterAll(db.close);
 
+let organizer;
+beforeEach(async () => {
+  organizer = await createUser('Organizer');
+});
+
+const post = () => request(app).post('/api/events').set('Authorization', organizer.header);
+
 describe('POST /api/events', () => {
   test('TC-EVENT-01: an organizer creates an event', async () => {
-    const res = await request(app).post('/api/events').send(validBody());
+    const res = await post().send(validBody());
 
     expect(res.status).toBe(201);
     expect(res.body.data).toMatchObject({
@@ -39,7 +46,7 @@ describe('POST /api/events', () => {
       capacity: 100,
       status: 'Upcoming',
       registeredCount: 0,
-      organizer: DEFAULT_USER_ID,
+      organizer: organizer.user.id,
     });
     expect(res.body.data._id).toBeDefined();
     expect(await Event.countDocuments()).toBe(1);
@@ -47,18 +54,17 @@ describe('POST /api/events', () => {
 
   test('TC-EVENT-01: organizer, status and registeredCount in the body are ignored', async () => {
     const someoneElse = new mongoose.Types.ObjectId().toString();
-    const res = await request(app)
-      .post('/api/events')
+    const res = await post()
       .send(validBody({ organizer: someoneElse, status: 'Cancelled', registeredCount: 50 }));
 
     expect(res.status).toBe(201);
-    expect(res.body.data.organizer).toBe(DEFAULT_USER_ID);
+    expect(res.body.data.organizer).toBe(organizer.user.id);
     expect(res.body.data.status).toBe('Upcoming');
     expect(res.body.data.registeredCount).toBe(0);
   });
 
   test('TC-EVENT-02: an empty body is rejected with a message for each required field', async () => {
-    const res = await request(app).post('/api/events').send({});
+    const res = await post().send({});
 
     expect(res.status).toBe(400);
     expect(res.body.error.code).toBe('VALIDATION_ERROR');
@@ -69,28 +75,28 @@ describe('POST /api/events', () => {
   });
 
   test('TC-EVENT-02: a missing title is rejected', async () => {
-    const res = await request(app).post('/api/events').send(validBody({ title: undefined }));
+    const res = await post().send(validBody({ title: undefined }));
 
     expect(res.status).toBe(400);
     expect(res.body.error.details.title).toBe('Title is required');
   });
 
   test('TC-EVENT-03: a category not in the list is rejected', async () => {
-    const res = await request(app).post('/api/events').send(validBody({ category: 'Party' }));
+    const res = await post().send(validBody({ category: 'Party' }));
 
     expect(res.status).toBe(400);
     expect(res.body.error.details.category).toBeDefined();
   });
 
   test('TC-EVENT-03: a date that is not a date is rejected', async () => {
-    const res = await request(app).post('/api/events').send(validBody({ startDateTime: 'next friday' }));
+    const res = await post().send(validBody({ startDateTime: 'next friday' }));
 
     expect(res.status).toBe(400);
     expect(res.body.error.details.startDateTime).toBeDefined();
   });
 
   test('TC-EVENT-08: capacity of 0 is rejected', async () => {
-    const res = await request(app).post('/api/events').send(validBody({ capacity: 0 }));
+    const res = await post().send(validBody({ capacity: 0 }));
 
     expect(res.status).toBe(400);
     expect(res.body.error.details.capacity).toBe('Capacity must be at least 1');
@@ -99,15 +105,14 @@ describe('POST /api/events', () => {
   test('TC-EVENT-08: an end date before the start is rejected', async () => {
     const body = validBody();
     body.endDateTime = new Date(new Date(body.startDateTime).getTime() - 60 * 1000).toISOString();
-    const res = await request(app).post('/api/events').send(body);
+    const res = await post().send(body);
 
     expect(res.status).toBe(400);
     expect(res.body.error.details.endDateTime).toBe('End date and time must be after the start');
   });
 
   test('TC-EVENT-08: a start date in the past is rejected', async () => {
-    const res = await request(app)
-      .post('/api/events')
+    const res = await post()
       .send(validBody({ startDateTime: new Date(Date.now() - DAY).toISOString() }));
 
     expect(res.status).toBe(400);
@@ -115,14 +120,14 @@ describe('POST /api/events', () => {
   });
 
   test('TC-EVENT-01: a body that is not valid JSON is rejected', async () => {
-    const res = await request(app).post('/api/events').set('Content-Type', 'application/json').send('{"title": ');
+    const res = await post().set('Content-Type', 'application/json').send('{"title": ');
 
     expect(res.status).toBe(400);
     expect(res.body.error.code).toBe('VALIDATION_ERROR');
   });
 
   test('TC-EVENT-01: a student cannot create an event (403)', async () => {
-    const res = await request(app).post('/api/events').set('x-stub-role', 'student').send(validBody());
+    const res = await request(app).post('/api/events').set('Authorization', (await createUser('Student')).header).send(validBody());
 
     expect(res.status).toBe(403);
     expect(res.body.error.code).toBe('FORBIDDEN');
@@ -130,7 +135,7 @@ describe('POST /api/events', () => {
   });
 
   test('TC-EVENT-01: a request without login cannot create an event (401)', async () => {
-    const res = await request(app).post('/api/events').set('x-stub-role', 'none').send(validBody());
+    const res = await request(app).post('/api/events').send(validBody());
 
     expect(res.status).toBe(401);
     expect(res.body.error.code).toBe('UNAUTHENTICATED');

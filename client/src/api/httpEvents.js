@@ -1,31 +1,20 @@
-// Talks to the real Express server (through the Vite proxy: /api -> localhost:5000).
+// Talks to the real Express server through the shared helper in ../api.js, which sends the login token.
 // Returns exactly the same shapes as api/mockEvents.js.
+import { api } from '../api.js'
 
-async function request(path, options = {}) {
-  const response = await fetch(`/api${path}`, {
-    headers: { 'Content-Type': 'application/json' },
-    ...options,
-  })
-  const body = await response.json().catch(() => null)
-
-  if (!response.ok) {
-    // The server always answers errors as { error: { code, message, details } }
-    const error = new Error(body?.error?.message || 'Request failed')
-    error.code = body?.error?.code
-    error.details = body?.error?.details
-    throw error
-  }
-  return body
-}
-
-export function listEvents({ page = 1, limit = 20 } = {}) {
-  return request(`/events?page=${page}&limit=${limit}`)
+// Filters are optional: q (text search), category, status (Upcoming, Ongoing, Completed, Cancelled).
+export function listEvents({ page = 1, limit = 20, q, category, status } = {}) {
+  const params = new URLSearchParams({ page, limit })
+  if (q) params.set('q', q)
+  if (category) params.set('category', category)
+  if (status) params.set('status', status)
+  return api(`/events?${params}`)
 }
 
 export function getEvent(id) {
-  return request(`/events/${encodeURIComponent(id)}`)
+  return api(`/events/${encodeURIComponent(id)}`)
 }
 
 export function createEvent(input) {
-  return request('/events', { method: 'POST', body: JSON.stringify(input) })
+  return api('/events', { method: 'POST', body: input })
 }
