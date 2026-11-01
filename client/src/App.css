@@ -401,6 +401,7 @@
 
 .attendance-app .progress-absent {
   background: var(--red);
+}
 
 .navbar {
   display: flex;
