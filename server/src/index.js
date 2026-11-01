@@ -5,6 +5,7 @@ const mongoose = require('mongoose');
 
 const authRoutes = require('./routes/authRoutes');
 const attendanceRoutes = require('./routes/attendanceRoutes');
+const reportRoutes = require('./routes/reportRoutes');
 
 const app = express();
 app.use(cors());
@@ -14,6 +15,7 @@ app.get('/api/health', (req, res) => res.json({ status: 'ok' }));
 
 app.use('/api/auth', authRoutes);
 app.use('/api/attendance', attendanceRoutes);
+app.use('/api/reports', reportRoutes);
 app.use('/api/events/:eventId/participants', require('./routes/participants.routes'));
 app.use('/api/events', require('./routes/events.routes'));
 app.use('/api/registrations', require('./routes/registrations.routes'));
