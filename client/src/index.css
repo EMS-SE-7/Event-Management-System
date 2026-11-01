@@ -66,3 +66,9 @@ p { margin: 4px 0; }
 .link-button { background: none; border: 0; padding: 0; color: var(--accent); font: inherit; text-decoration: underline; cursor: pointer; }
 .pager { display: flex; justify-content: space-between; align-items: center; margin-top: 16px; }
 .link-button:disabled { color: var(--muted); text-decoration: none; cursor: default; }
+
+/* The login pages style plain form/button/input globally (App.css); the event pages keep their own layout. */
+form.event-form { display: grid; max-width: none; margin: 0; flex-direction: initial; }
+form.filters { flex-direction: row; max-width: none; margin: 0 0 16px; }
+.button { border: 0; }
+.link-button { border: 0; padding: 0; background: none; }
