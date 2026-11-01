@@ -55,3 +55,5 @@ p { margin: 4px 0; }
 .field-error { margin: 0; color: #b42318; font-size: 0.85rem; }
 .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
 @media (max-width: 560px) { .field-row { grid-template-columns: 1fr; } }
+
+.card-actions { display: flex; flex-wrap: wrap; gap: 16px; margin-top: 8px; font-size: 0.9rem; }
