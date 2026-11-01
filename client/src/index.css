@@ -64,3 +64,5 @@ p { margin: 4px 0; }
 .filters input[type='search'] { flex: 1 1 220px; }
 .filters input, .filters select { font: inherit; padding: 8px 10px; border: 1px solid var(--line); border-radius: 6px; background: #fff; color: var(--ink); }
 .link-button { background: none; border: 0; padding: 0; color: var(--accent); font: inherit; text-decoration: underline; cursor: pointer; }
+.pager { display: flex; justify-content: space-between; align-items: center; margin-top: 16px; }
+.link-button:disabled { color: var(--muted); text-decoration: none; cursor: default; }
