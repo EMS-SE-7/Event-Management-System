@@ -59,3 +59,8 @@ p { margin: 4px 0; }
 .card-actions { display: flex; flex-wrap: wrap; gap: 16px; margin-top: 8px; font-size: 0.9rem; }
 .danger-zone { margin-top: 24px; background: var(--card); border: 1px solid #f4c7c1; border-radius: 8px; padding: 16px 20px; display: grid; gap: 8px; justify-items: start; }
 .button-danger { background: #b42318; }
+
+.filters { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 16px; }
+.filters input[type='search'] { flex: 1 1 220px; }
+.filters input, .filters select { font: inherit; padding: 8px 10px; border: 1px solid var(--line); border-radius: 6px; background: #fff; color: var(--ink); }
+.link-button { background: none; border: 0; padding: 0; color: var(--accent); font: inherit; text-decoration: underline; cursor: pointer; }
