@@ -22,6 +22,7 @@ export default function AttendanceEventsPage() {
     <div className="page">
       <h2>Take attendance</h2>
       <p>Pick one of your events.</p>
+      <p><Link to="/organizer/reports">View event reports</Link></p>
 
       {error && <p role="alert" className="error">{error}</p>}
 
@@ -32,6 +33,7 @@ export default function AttendanceEventsPage() {
           <li key={event.id}>
             <Link to={`/organizer/events/${event.id}/attendance`}>{event.title}</Link>
             {' '}- {event.status}, {event.registered} registered
+            {' '}(<Link to={`/organizer/events/${event.id}/report`}>report</Link>)
           </li>
         ))}
       </ul>

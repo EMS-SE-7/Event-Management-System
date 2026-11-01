@@ -12,6 +12,7 @@ app.get('/api/health', (req, res) => res.json({ status: 'ok' }));
 
 app.use('/api/auth', require('./routes/auth.routes'));
 app.use('/api/attendance', require('./routes/attendanceRoutes'));
+app.use('/api/reports', require('./routes/reportRoutes'));
 app.use('/api/events/:eventId/participants', require('./routes/participants.routes'));
 app.use('/api/events', require('./routes/events.routes'));
 app.use('/api/registrations', require('./routes/registrations.routes'));

@@ -16,7 +16,7 @@ exports.getMyEvents = async (req, res) => {
     const list = await Promise.all(events.map(async (event) => {
       const registered = await Registration.countDocuments({
         event: event._id,
-        status: 'Active'
+        status: 'Registered'
       });
 
       return {
@@ -34,7 +34,7 @@ exports.getMyEvents = async (req, res) => {
 };
 
 // GET /api/attendance/event/:eventId
-// Active registrations of one event, so the organizer can mark attendance.
+// Registered (not cancelled) students of one event, so the organizer can mark attendance.
 exports.getEventAttendance = async (req, res) => {
   try {
     const event = await Event.findById(req.params.eventId);
@@ -49,7 +49,7 @@ exports.getEventAttendance = async (req, res) => {
 
     const registrations = await Registration.find({
       event: event._id,
-      status: 'Active'
+      status: 'Registered'
     }).populate('student', 'name email');
 
     return res.json({

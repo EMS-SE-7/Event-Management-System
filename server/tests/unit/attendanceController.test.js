@@ -31,7 +31,7 @@ describe('markAttendance', () => {
 
   const activeReg = (extra = {}) => ({
     event: 'e1',
-    status: 'Active',
+    status: 'Registered',
     attendanceStatus: 'Not Marked',
     save: jest.fn(),
     ...extra
@@ -166,7 +166,7 @@ describe('getEventAttendance', () => {
 
     await getEventAttendance(req, res);
 
-    expect(Registration.find).toHaveBeenCalledWith({ event: 'e1', status: 'Active' });
+    expect(Registration.find).toHaveBeenCalledWith({ event: 'e1', status: 'Registered' });
     expect(populate).toHaveBeenCalledWith('student', 'name email');
     expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
       event: { id: 'e1', title: 'Hackathon' }

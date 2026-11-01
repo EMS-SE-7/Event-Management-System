@@ -10,6 +10,8 @@ import CreateEventPage from './pages/organizer/CreateEventPage'
 import Register from './pages/Register'
 import AttendanceEventsPage from './pages/AttendanceEventsPage'
 import AttendancePage from './pages/AttendancePage'
+import EventReportPage from './pages/EventReportPage'
+import ReportsPage from './pages/ReportsPage'
 import './App.css'
 
 function RootRedirect() {
@@ -39,6 +41,8 @@ export default function App() {
           <Route path="/organizer/events/new" element={<CreateEventPage />} />
           <Route path="/organizer/attendance" element={<div className="attendance-app"><AttendanceEventsPage /></div>} />
           <Route path="/organizer/events/:eventId/attendance" element={<div className="attendance-app"><AttendancePage /></div>} />
+          <Route path="/organizer/reports" element={<div className="attendance-app"><ReportsPage /></div>} />
+          <Route path="/organizer/events/:eventId/report" element={<div className="attendance-app"><EventReportPage /></div>} />
         </Route>
 
         <Route path="*" element={<RootRedirect />} />
