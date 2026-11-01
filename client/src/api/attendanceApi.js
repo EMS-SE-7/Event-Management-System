@@ -1,34 +1,14 @@
-function getHeaders() {
-  const token = localStorage.getItem('token')
-
-  return {
-    'Content-Type': 'application/json',
-    ...(token ? { Authorization: `Bearer ${token}` } : {}),
-  }
-}
-
-async function handleResponse(response) {
-  const data = await response.json()
-
-  if (!response.ok) {
-    throw new Error(data.message || 'Request failed')
-  }
-
-  return data
-}
+// Uses the shared helper in ../api.js, which sends the login token and reads the { error } format.
+import { api } from '../api.js'
 
 export function getMyEvents() {
-  return fetch('/api/attendance/events', { headers: getHeaders() }).then(handleResponse)
+  return api('/attendance/events')
 }
 
 export function getEventAttendance(eventId) {
-  return fetch(`/api/attendance/event/${eventId}`, { headers: getHeaders() }).then(handleResponse)
+  return api(`/attendance/event/${encodeURIComponent(eventId)}`)
 }
 
 export function markAttendance(registrationId, status) {
-  return fetch(`/api/attendance/${registrationId}`, {
-    method: 'PATCH',
-    headers: getHeaders(),
-    body: JSON.stringify({ status }),
-  }).then(handleResponse)
+  return api(`/attendance/${encodeURIComponent(registrationId)}`, { method: 'PATCH', body: { status } })
 }

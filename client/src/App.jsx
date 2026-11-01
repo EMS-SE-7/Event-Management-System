@@ -1,68 +1,48 @@
 import { Navigate, Route, Routes } from 'react-router-dom'
-import BrowseEventsPage from './pages/events/BrowseEventsPage.jsx'
-import EventDetailsPage from './pages/events/EventDetailsPage.jsx'
-import CreateEventPage from './pages/organizer/CreateEventPage.jsx'
-import LoginPage from './pages/LoginPage'
+import { homeFor, useAuth } from './auth-context'
+import Navbar from './components/Navbar'
+import { OrganizerRoute, ProtectedRoute } from './components/guards'
+import BrowseEventsPage from './pages/events/BrowseEventsPage'
+import EventDetailsPage from './pages/events/EventDetailsPage'
+import { OrganizerDashboard, Placeholder, StudentDashboard } from './pages/Home'
+import Login from './pages/Login'
+import CreateEventPage from './pages/organizer/CreateEventPage'
+import Register from './pages/Register'
 import AttendanceEventsPage from './pages/AttendanceEventsPage'
 import AttendancePage from './pages/AttendancePage'
 import './App.css'
 
-// Only organizers can open the attendance pages.
-// The real authorization check is done on the server.
-function OrganizerRoute({ children }) {
-  const token = localStorage.getItem('token')
-  const role = localStorage.getItem('role')
-
-  return token && role === 'Organizer'
-    ? <div className="attendance-app">{children}</div>
-    : <Navigate to="/login" replace />
+function RootRedirect() {
+  const { user } = useAuth()
+  return <Navigate to={user ? homeFor(user.role) : '/login'} replace />
 }
 
-function App() {
+export default function App() {
   return (
-    <Routes>
-      {/* Event Management */}
-      <Route path="/" element={<Navigate to="/events" replace />} />
-      <Route path="/events" element={<BrowseEventsPage />} />
-      <Route path="/events/:id" element={<EventDetailsPage />} />
-      <Route
-        path="/organizer/events/new"
-        element={<CreateEventPage />}
-      />
+    <>
+      <Navbar />
+      <Routes>
+        <Route path="/" element={<RootRedirect />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
 
-      {/* Authentication */}
-      <Route
-        path="/login"
-        element={
-          <div className="attendance-app">
-            <LoginPage />
-          </div>
-        }
-      />
+        <Route element={<ProtectedRoute />}>
+          <Route path="/events" element={<BrowseEventsPage />} />
+          <Route path="/events/:id" element={<EventDetailsPage />} />
+          <Route path="/student" element={<StudentDashboard />} />
+          <Route path="/student/registrations" element={<Placeholder title="My Registrations" />} />
+        </Route>
 
-      {/* Attendance */}
-      <Route
-        path="/organizer/attendance"
-        element={
-          <OrganizerRoute>
-            <AttendanceEventsPage />
-          </OrganizerRoute>
-        }
-      />
+        <Route element={<OrganizerRoute />}>
+          <Route path="/organizer" element={<OrganizerDashboard />} />
+          <Route path="/organizer/events" element={<Placeholder title="My Events" />} />
+          <Route path="/organizer/events/new" element={<CreateEventPage />} />
+          <Route path="/organizer/attendance" element={<div className="attendance-app"><AttendanceEventsPage /></div>} />
+          <Route path="/organizer/events/:eventId/attendance" element={<div className="attendance-app"><AttendancePage /></div>} />
+        </Route>
 
-      <Route
-        path="/organizer/events/:eventId/attendance"
-        element={
-          <OrganizerRoute>
-            <AttendancePage />
-          </OrganizerRoute>
-        }
-      />
-
-      {/* Unknown route */}
-      <Route path="*" element={<Navigate to="/events" replace />} />
-    </Routes>
+        <Route path="*" element={<RootRedirect />} />
+      </Routes>
+    </>
   )
 }
-
-export default App
