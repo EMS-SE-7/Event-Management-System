@@ -4,6 +4,7 @@ import { getEvent, updateEvent } from '../../api/events.js'
 import { useAuth } from '../../auth-context'
 import StatusBadge from '../../components/StatusBadge.jsx'
 import { changedFields, toFormValues } from '../../utils/eventForm.js'
+import CancelEventButton from './CancelEventButton.jsx'
 import EventForm from './EventForm.jsx'
 
 function EditEvent({ id }) {
@@ -77,11 +78,12 @@ function EditEvent({ id }) {
         submittingLabel="Saving..."
         errorPrefix="Could not save the event"
       />
+      <CancelEventButton event={event} onCancelled={() => navigate('/organizer/events')} />
     </>
   )
 }
 
-// EVENT-04, EVENT-07, EVENT-08: the owner edits an upcoming or ongoing event.
+// EVENT-04, EVENT-05, EVENT-07, EVENT-08: the owner edits or cancels an upcoming or ongoing event.
 export default function EditEventPage() {
   const { id } = useParams()
   return (
