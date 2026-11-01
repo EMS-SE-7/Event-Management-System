@@ -23,7 +23,7 @@ beforeEach(() => jest.resetAllMocks());
 
 describe('PATCH /api/attendance/:registrationId', () => {
   const mockOwnedRegistration = () => {
-    const reg = { event: 'e1', status: 'Active', attendanceStatus: 'Not Marked', save: jest.fn() };
+    const reg = { event: 'e1', status: 'Registered', attendanceStatus: 'Not Marked', save: jest.fn() };
     Registration.findById.mockResolvedValue(reg);
     Event.findById.mockResolvedValue({ organizer: 'org1', status: 'Upcoming' });
     return reg;
@@ -90,7 +90,7 @@ describe('PATCH /api/attendance/:registrationId', () => {
   });
 
   test('403 when a different organizer tries it (ATT-06)', async () => {
-    const reg = { event: 'e1', status: 'Active', save: jest.fn() };
+    const reg = { event: 'e1', status: 'Registered', save: jest.fn() };
     Registration.findById.mockResolvedValue(reg);
     Event.findById.mockResolvedValue({ organizer: 'org2', status: 'Upcoming' });
 
