@@ -63,20 +63,43 @@ async function createEvent(req, res) {
   res.status(201).json({ data: withCalculatedFields(event) });
 }
 
+const CALCULATED_STATUSES = ['Upcoming', 'Ongoing', 'Completed', 'Cancelled'];
+
+// Turns a calculated status (DISC-05) into a database filter.
+// Same rules as computeStatus in utils/eventStatus.js.
+function statusFilter(status, now) {
+  if (status === 'Cancelled') return { status: 'Cancelled' };
+  const notCancelled = { status: { $ne: 'Cancelled' } };
+  if (status === 'Completed') return { ...notCancelled, endDateTime: { $lt: now } };
+  if (status === 'Ongoing') return { ...notCancelled, startDateTime: { $lte: now }, endDateTime: { $gte: now } };
+  return { ...notCancelled, startDateTime: { $gt: now } }; // Upcoming
+}
+
 // GET /api/events (DISC-01, DISC-02, DISC-03, DISC-05, DISC-06)
-// Optional: ?search=text  ?category=Technical  ?page=1&limit=20
+// Optional: ?q=text  ?category=Technical  ?status=Upcoming  ?page=1&limit=20
+// ?search= is still accepted as an old name for ?q=.
 async function listEvents(req, res) {
   const { page, limit } = readPaging(req.query);
   const filter = {};
 
-  const search = typeof req.query.search === 'string' ? req.query.search.trim() : '';
-  if (search) {
-    const pattern = new RegExp(escapeRegex(search), 'i');
+  const rawText = typeof req.query.q === 'string' ? req.query.q : req.query.search;
+  const text = typeof rawText === 'string' ? rawText.trim() : '';
+  if (text) {
+    const pattern = new RegExp(escapeRegex(text), 'i');
     filter.$or = [{ title: pattern }, { description: pattern }, { venue: pattern }];
   }
 
   if (typeof req.query.category === 'string' && req.query.category) {
     filter.category = req.query.category;
+  }
+
+  if (req.query.status !== undefined && req.query.status !== '') {
+    if (!CALCULATED_STATUSES.includes(req.query.status)) {
+      throw new AppError(400, 'VALIDATION_ERROR', 'Some fields are missing or invalid', {
+        status: 'Status must be one of: ' + CALCULATED_STATUSES.join(', '),
+      });
+    }
+    Object.assign(filter, statusFilter(req.query.status, new Date()));
   }
 
   await sendPage(res, filter, page, limit);
@@ -97,13 +120,21 @@ async function getEvent(req, res) {
   res.json({ data: withCalculatedFields(event) });
 }
 
+// Cancelled and completed events are read-only (team agreement section 8 error codes).
+function assertChangeable(current, action) {
+  if (current === 'Cancelled') {
+    throw new AppError(409, 'EVENT_CANCELLED', `A cancelled event cannot be ${action}`);
+  }
+  if (current === 'Completed') {
+    throw new AppError(409, 'EVENT_NOT_UPCOMING', `A completed event cannot be ${action}`);
+  }
+}
+
 // PATCH /api/events/:id (EVENT-04, EVENT-07, EVENT-08)
 async function updateEvent(req, res) {
   const event = await loadOwnEvent(req);
   const current = computeStatus(event);
-  if (current === 'Cancelled' || current === 'Completed') {
-    throw new AppError(409, 'CONFLICT', `A ${current.toLowerCase()} event cannot be edited`);
-  }
+  assertChangeable(current, 'edited');
   event.set(pick(req.body || {}, EVENT_FIELDS)); // organizer/status/registeredCount cannot be changed here
   await event.save(); // schema rules throw a ValidationError -> 400
   res.json({ data: withCalculatedFields(event) });
@@ -113,9 +144,7 @@ async function updateEvent(req, res) {
 async function cancelEvent(req, res) {
   const event = await loadOwnEvent(req);
   const current = computeStatus(event);
-  if (current === 'Cancelled' || current === 'Completed') {
-    throw new AppError(409, 'CONFLICT', `A ${current.toLowerCase()} event cannot be cancelled`);
-  }
+  assertChangeable(current, 'cancelled');
   event.status = 'Cancelled';
   await event.save();
   res.json({ data: withCalculatedFields(event) });

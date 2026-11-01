@@ -76,9 +76,14 @@ function withCalculatedFields(raw, now = new Date()) {
 // Pretend the network takes a moment, so loading states are visible in the demo.
 const delay = (ms = 300) => new Promise((resolve) => setTimeout(resolve, ms))
 
-export async function listEvents({ page = 1, limit = 20 } = {}) {
+export async function listEvents({ page = 1, limit = 20, q, category, status } = {}) {
   await delay()
-  const sorted = [...stored].sort((a, b) => new Date(a.startDateTime) - new Date(b.startDateTime))
+  const text = (q || '').trim().toLowerCase()
+  const sorted = [...stored]
+    .filter((e) => !text || [e.title, e.description, e.venue].some((v) => (v || '').toLowerCase().includes(text)))
+    .filter((e) => !category || e.category === category)
+    .filter((e) => !status || withCalculatedFields(e).status === status)
+    .sort((a, b) => new Date(a.startDateTime) - new Date(b.startDateTime))
   const pageItems = sorted.slice((page - 1) * limit, page * limit)
   return {
     data: pageItems.map((e) => withCalculatedFields(e)),

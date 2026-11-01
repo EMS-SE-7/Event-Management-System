@@ -1,11 +1,11 @@
 // Registration API used by the Register button.
 //
-// Demo mode (default): registrations are simulated in memory, no server needed.
-// Real mode: client/.env.local contains   VITE_USE_MOCK=false   (same switch as api/events.js).
+// Real mode (default): calls the server with the login token.
+// Demo mode: client/.env.local contains   VITE_USE_MOCK=true   (same switch as api/events.js).
 
 import { api } from '../api.js'
 
-const useMock = import.meta.env.VITE_USE_MOCK !== 'false'
+const useMock = import.meta.env.VITE_USE_MOCK === 'true'
 
 function makeError(code, message) {
   const error = new Error(message)

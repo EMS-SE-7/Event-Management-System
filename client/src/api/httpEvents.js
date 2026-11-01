@@ -2,8 +2,13 @@
 // Returns exactly the same shapes as api/mockEvents.js.
 import { api } from '../api.js'
 
-export function listEvents({ page = 1, limit = 20 } = {}) {
-  return api(`/events?page=${page}&limit=${limit}`)
+// Filters are optional: q (text search), category, status (Upcoming, Ongoing, Completed, Cancelled).
+export function listEvents({ page = 1, limit = 20, q, category, status } = {}) {
+  const params = new URLSearchParams({ page, limit })
+  if (q) params.set('q', q)
+  if (category) params.set('category', category)
+  if (status) params.set('status', status)
+  return api(`/events?${params}`)
 }
 
 export function getEvent(id) {

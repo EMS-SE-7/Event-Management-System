@@ -1,11 +1,13 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { listEvents } from '../../api/events.js'
+import { ROLES, useAuth } from '../../auth-context'
 import StatusBadge from '../../components/StatusBadge.jsx'
 import { formatDate, seatsText } from '../../utils/format.js'
 
 // DISC-01, DISC-05, DISC-06: browse events with status, seats and registration availability
 export default function BrowseEventsPage() {
+  const { user } = useAuth()
   const [events, setEvents] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
@@ -31,7 +33,9 @@ export default function BrowseEventsPage() {
     <main className="page">
       <div className="page-head">
         <h1>Browse events</h1>
-        <Link to="/organizer/events/new" className="button">Create event</Link>
+        {user?.role === ROLES.ORGANIZER && (
+          <Link to="/organizer/events/new" className="button">Create event</Link>
+        )}
       </div>
 
       {loading && <p className="muted">Loading events...</p>}

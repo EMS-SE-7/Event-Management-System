@@ -68,7 +68,7 @@ describe('GET /api/events search and category filter', () => {
   });
 
   test('TC-DISC-02: search finds events by title, ignoring case', async () => {
-    const res = await api().get('/api/events').query({ search: 'HACKATHON' });
+    const res = await api().get('/api/events').query({ q: 'HACKATHON' });
 
     expect(res.status).toBe(200);
     expect(res.body.meta.total).toBe(1);
@@ -76,15 +76,15 @@ describe('GET /api/events search and category filter', () => {
   });
 
   test('TC-DISC-02: search also looks at description and venue', async () => {
-    const byDescription = await api().get('/api/events').query({ search: 'dance show' });
-    const byVenue = await api().get('/api/events').query({ search: 'Lab 2' });
+    const byDescription = await api().get('/api/events').query({ q: 'dance show' });
+    const byVenue = await api().get('/api/events').query({ q: 'Lab 2' });
 
     expect(byDescription.body.data.map((e) => e.title)).toEqual(['Dance Night']);
     expect(byVenue.body.data.map((e) => e.title)).toEqual(['Robotics Workshop']);
   });
 
   test('TC-DISC-02: search with no match returns an empty list', async () => {
-    const res = await api().get('/api/events').query({ search: 'zzzz' });
+    const res = await api().get('/api/events').query({ q: 'zzzz' });
 
     expect(res.status).toBe(200);
     expect(res.body.data).toEqual([]);
@@ -92,7 +92,7 @@ describe('GET /api/events search and category filter', () => {
   });
 
   test('TC-DISC-02: special characters in search do not break the request', async () => {
-    const res = await api().get('/api/events').query({ search: '(' });
+    const res = await api().get('/api/events').query({ q: '(' });
 
     expect(res.status).toBe(200);
     expect(res.body.meta.total).toBe(0);
@@ -107,17 +107,53 @@ describe('GET /api/events search and category filter', () => {
   });
 
   test('TC-DISC-02/03: search and category can be combined', async () => {
-    const match = await api().get('/api/events').query({ search: 'lab', category: 'Workshop' });
-    const noMatch = await api().get('/api/events').query({ search: 'hackathon', category: 'Cultural' });
+    const match = await api().get('/api/events').query({ q: 'lab', category: 'Workshop' });
+    const noMatch = await api().get('/api/events').query({ q: 'hackathon', category: 'Cultural' });
 
     expect(match.body.data.map((e) => e.title)).toEqual(['Robotics Workshop']);
     expect(noMatch.body.meta.total).toBe(0);
+  });
+
+  test('TC-DISC-02: the old ?search= name still works', async () => {
+    const res = await api().get('/api/events').query({ search: 'hackathon' });
+
+    expect(res.body.data.map((e) => e.title)).toEqual(['Hackathon 2026']);
   });
 
   test('TC-DISC-01: no filters still returns every event', async () => {
     const res = await api().get('/api/events');
 
     expect(res.body.meta.total).toBe(3);
+  });
+});
+
+describe('GET /api/events status filter', () => {
+  test('TC-DISC-05: ?status= filters by the calculated status', async () => {
+    await makeEvent({ title: 'Upcoming One' });
+    const cancelled = await makeEvent({ title: 'Cancelled One' });
+    await Event.updateOne({ _id: cancelled._id }, { status: 'Cancelled' });
+    await makeCompletedEvent();
+    const start = new Date(Date.now() - HOUR);
+    await Event.collection.insertOne({
+      title: 'Ongoing One', category: 'Technical', venue: 'Lab', startDateTime: start,
+      endDateTime: new Date(start.getTime() + 3 * HOUR), registrationDeadline: new Date(start.getTime() - DAY),
+      capacity: 10, registeredCount: 0, status: 'Upcoming', organizer: organizer.user._id,
+    });
+
+    const titles = async (status) => (await api().get('/api/events').query({ status })).body.data.map((e) => e.title);
+
+    expect(await titles('Upcoming')).toEqual(['Upcoming One']);
+    expect(await titles('Ongoing')).toEqual(['Ongoing One']);
+    expect(await titles('Completed')).toEqual(['Old Seminar']);
+    expect(await titles('Cancelled')).toEqual(['Cancelled One']);
+  });
+
+  test('TC-DISC-05: an unknown status returns 400', async () => {
+    const res = await api().get('/api/events').query({ status: 'Finished' });
+
+    expect(res.status).toBe(400);
+    expect(res.body.error.code).toBe('VALIDATION_ERROR');
+    expect(res.body.error.details.status).toBeDefined();
   });
 });
 
@@ -257,6 +293,7 @@ describe('PATCH /api/events/:id (edit)', () => {
     const res = await api().patch(`/api/events/${event._id}`).send({ title: 'Revived' });
 
     expect(res.status).toBe(409);
+    expect(res.body.error.code).toBe('EVENT_CANCELLED');
   });
 
   test('TC-EVENT-04: a completed event cannot be edited', async () => {
@@ -265,6 +302,7 @@ describe('PATCH /api/events/:id (edit)', () => {
     const res = await api().patch(`/api/events/${id}`).send({ title: 'Changed' });
 
     expect(res.status).toBe(409);
+    expect(res.body.error.code).toBe('EVENT_NOT_UPCOMING');
   });
 });
 
@@ -327,6 +365,7 @@ describe('PATCH /api/events/:id/cancel', () => {
     const res = await api().patch(`/api/events/${event._id}/cancel`);
 
     expect(res.status).toBe(409);
+    expect(res.body.error.code).toBe('EVENT_CANCELLED');
   });
 
   test('TC-EVENT-05: a completed event cannot be cancelled', async () => {
@@ -335,5 +374,6 @@ describe('PATCH /api/events/:id/cancel', () => {
     const res = await api().patch(`/api/events/${id}/cancel`);
 
     expect(res.status).toBe(409);
+    expect(res.body.error.code).toBe('EVENT_NOT_UPCOMING');
   });
 });
