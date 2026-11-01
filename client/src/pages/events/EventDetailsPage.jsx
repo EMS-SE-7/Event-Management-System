@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { getEvent } from '../../api/events.js'
 import StatusBadge from '../../components/StatusBadge.jsx'
+import RegisterButton from '../../components/RegisterButton.jsx'
 import { formatDate, seatsText } from '../../utils/format.js'
 
 function EventDetails({ id }) {
@@ -25,6 +26,20 @@ function EventDetails({ id }) {
       cancelled = true
     }
   }, [id])
+
+    // After a successful registration, show one seat fewer without reloading.
+  function handleRegistered() {
+    setEvent((current) => {
+      const seatsLeft = Math.max((current.seatsLeft ?? 1) - 1, 0)
+      return {
+        ...current,
+        registeredCount: (current.registeredCount ?? 0) + 1,
+        seatsLeft,
+        isFull: seatsLeft === 0,
+        registrationOpen: current.registrationOpen && seatsLeft > 0,
+      }
+    })
+  }
 
   if (loading) return <p className="muted">Loading event...</p>
 
@@ -63,8 +78,9 @@ function EventDetails({ id }) {
         {event.registrationOpen ? 'Registration is open' : 'Registration is closed'}
       </p>
 
-      {/* The Register button from the registration module goes here. */}
-      <div className="register-slot" />
+            <div className="register-slot">
+        <RegisterButton event={event} onRegistered={handleRegistered} />
+      </div>
     </article>
   )
 }
