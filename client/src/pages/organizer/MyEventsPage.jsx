@@ -59,10 +59,11 @@ export default function MyEventsPage() {
               {event.registeredCount} registered &middot; {seatsText(event)}
             </p>
             <p className="card-actions">
-              {canEdit(event) && <Link to={`/organizer/events/${event._id}/edit`}>Edit or cancel</Link>}
-              <Link to={`/organizer/events/${event._id}/attendance`}>Attendance</Link>
-              <Link to={`/organizer/events/${event._id}/report`}>Report</Link>
-            </p>
+  {canEdit(event) && <Link to={`/organizer/events/${event._id}/edit`}>Edit or cancel</Link>}
+  <Link to={`/organizer/events/${event._id}/attendance`}>Attendance</Link>
+  <Link to={`/organizer/events/${event._id}/participants`}>Participants</Link>
+  <Link to={`/organizer/events/${event._id}/report`}>Report</Link>
+</p>
           </li>
         ))}
       </ul>

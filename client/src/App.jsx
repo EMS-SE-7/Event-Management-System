@@ -4,7 +4,7 @@ import Navbar from './components/Navbar'
 import { OrganizerRoute, ProtectedRoute } from './components/guards'
 import BrowseEventsPage from './pages/events/BrowseEventsPage'
 import EventDetailsPage from './pages/events/EventDetailsPage'
-import { OrganizerDashboard, Placeholder, StudentDashboard } from './pages/Home'
+import { OrganizerDashboard, StudentDashboard } from './pages/Home'
 import Login from './pages/Login'
 import CreateEventPage from './pages/organizer/CreateEventPage'
 import EditEventPage from './pages/organizer/EditEventPage'
@@ -14,6 +14,8 @@ import AttendanceEventsPage from './pages/AttendanceEventsPage'
 import AttendancePage from './pages/AttendancePage'
 import EventReportPage from './pages/EventReportPage'
 import ReportsPage from './pages/ReportsPage'
+import MyRegistrationsPage from './pages/student/MyRegistrationsPage'
+import EventParticipantsPage from './pages/organizer/EventParticipantsPage'
 import './App.css'
 
 function RootRedirect() {
@@ -34,7 +36,7 @@ export default function App() {
           <Route path="/events" element={<BrowseEventsPage />} />
           <Route path="/events/:id" element={<EventDetailsPage />} />
           <Route path="/student" element={<StudentDashboard />} />
-          <Route path="/student/registrations" element={<Placeholder title="My Registrations" />} />
+          <Route path="/student/registrations" element={<MyRegistrationsPage />} />
         </Route>
 
         <Route element={<OrganizerRoute />}>
@@ -46,6 +48,7 @@ export default function App() {
           <Route path="/organizer/events/:eventId/attendance" element={<div className="attendance-app"><AttendancePage /></div>} />
           <Route path="/organizer/reports" element={<div className="attendance-app"><ReportsPage /></div>} />
           <Route path="/organizer/events/:eventId/report" element={<div className="attendance-app"><EventReportPage /></div>} />
+          <Route path="/organizer/events/:eventId/participants" element={<EventParticipantsPage />} />
         </Route>
 
         <Route path="*" element={<RootRedirect />} />
