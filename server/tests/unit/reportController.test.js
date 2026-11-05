@@ -53,6 +53,26 @@ describe('getEventReport', () => {
     expect(res.status).toHaveBeenCalledWith(404);
   });
 
+  test('403 when the organizer does not own the event', async () => {
+    Event.findById.mockResolvedValue({ _id: 'e1', title: 'Hackathon', capacity: 4, organizer: 'org2' });
+    const res = mockRes();
+    await getEventReport(req, res);
+    expect(res.status).toHaveBeenCalledWith(403);
+    expect(res.json).toHaveBeenCalledWith({ error: { code: 'FORBIDDEN', message: 'Not the organizer of this event' } });
+    expect(Registration.find).not.toHaveBeenCalled();
+  });
+
+  test('a finished event is reported as Completed, not its stored status', async () => {
+    Event.findById.mockResolvedValue({
+      _id: 'e1', title: 'Old talk', status: 'Upcoming', capacity: 4, organizer: 'org1',
+      startDateTime: new Date('2020-01-01T10:00:00Z'), endDateTime: new Date('2020-01-01T12:00:00Z')
+    });
+    mockRegistrations([]);
+    const res = mockRes();
+    await getEventReport(req, res);
+    expect(res.json.mock.calls[0][0].event.status).toBe('Completed');
+  });
+
   test('400 for a malformed event id', async () => {
     Event.findById.mockRejectedValue({ name: 'CastError' });
     const res = mockRes();
