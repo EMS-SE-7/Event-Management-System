@@ -6,6 +6,7 @@ import StatusBadge from '../../components/StatusBadge.jsx'
 import { changedFields, toFormValues } from '../../utils/eventForm.js'
 import CancelEventButton from './CancelEventButton.jsx'
 import EventForm from './EventForm.jsx'
+import PageHead from '../../components/PageHead.jsx'
 
 function EditEvent({ id }) {
   const navigate = useNavigate()
@@ -31,7 +32,7 @@ function EditEvent({ id }) {
     }
   }, [id])
 
-  if (loading) return <p className="muted">Loading event...</p>
+  if (loading) return <p className="loading">Loading event</p>
 
   if (error) {
     return (
@@ -48,9 +49,9 @@ function EditEvent({ id }) {
 
   if (event.status === 'Cancelled' || event.status === 'Completed') {
     return (
-      <p className="muted">
+      <div className="empty">
         This event is {event.status.toLowerCase()}, so it can no longer be changed.
-      </p>
+      </div>
     )
   }
 
@@ -66,11 +67,9 @@ function EditEvent({ id }) {
 
   return (
     <>
-      <div className="page-head">
-        <h1>Edit event</h1>
+      <PageHead eyebrow={event.title} title="Edit event" intro={`${event.registeredCount} students registered. Capacity cannot go below that.`}>
         <StatusBadge status={event.status} />
-      </div>
-      <p className="muted">{event.registeredCount} students registered. Capacity cannot go below that.</p>
+      </PageHead>
       <EventForm
         initialValues={initialValues}
         onSubmit={handleSubmit}
@@ -87,10 +86,8 @@ function EditEvent({ id }) {
 export default function EditEventPage() {
   const { id } = useParams()
   return (
-    <main className="page">
-      <p>
-        <Link to="/organizer/events">&larr; Back to my events</Link>
-      </p>
+    <main className="page page-narrow">
+      <Link to="/organizer/events" className="back-link">&larr; My events</Link>
       <EditEvent key={id} id={id} />
     </main>
   )

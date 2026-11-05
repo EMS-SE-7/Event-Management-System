@@ -1,6 +1,9 @@
 import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { getEventAttendance, markAttendance } from '../api/attendanceApi'
+import PageHead from '../components/PageHead.jsx'
+import StatusBadge from '../components/StatusBadge.jsx'
+import { initials } from '../utils/format.js'
 
 function statusOf(reg) {
   return reg.attendanceStatus || 'Not Marked'
@@ -12,6 +15,7 @@ export default function AttendancePage() {
   const [registrations, setRegistrations] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const [savingId, setSavingId] = useState('')
 
   useEffect(() => {
     getEventAttendance(eventId)
@@ -24,6 +28,7 @@ export default function AttendancePage() {
   }, [eventId])
 
   async function handleMark(registrationId, status) {
+    setSavingId(registrationId)
     try {
       const data = await markAttendance(registrationId, status)
 
@@ -37,84 +42,95 @@ export default function AttendancePage() {
       setError('')
     } catch (err) {
       setError(err.message)
+    } finally {
+      setSavingId('')
     }
-  }
-
-  if (loading) {
-    return <p className="muted">Loading attendance...</p>
   }
 
   const count = (s) => registrations.filter((reg) => statusOf(reg) === s).length
 
   return (
-    <>
-      <Link to="/organizer/attendance" className="back-link">&larr; Back to events</Link>
-      <h2 className="page-title">{eventTitle}</h2>
-      <Link to={`/organizer/events/${eventId}/report`}>View report</Link>
-      <p className="muted">Mark each registered student as Present or Absent. You can change it any time.</p>
+    <main className="page">
+      <Link to="/organizer/attendance" className="back-link">&larr; All events</Link>
 
-      {error && <p role="alert" className="error">{error}</p>}
+      {loading && <p className="loading">Loading attendance</p>}
 
-      <div className="summary">
-        <div className="chip chip-present"><strong>{count('Present')}</strong> Present</div>
-        <div className="chip chip-absent"><strong>{count('Absent')}</strong> Absent</div>
-        <div className="chip chip-pending"><strong>{count('Not Marked')}</strong> Not marked</div>
-      </div>
+      {!loading && (
+        <>
+          <PageHead eyebrow="Attendance" title={eventTitle || 'Attendance'} intro="Mark each registered student as Present or Absent. You can change it any time.">
+            <Link to={`/organizer/events/${eventId}/report`} className="button button-ghost">View report</Link>
+          </PageHead>
 
-      {registrations.length === 0 ? (
-        <p className="muted">No registered students yet.</p>
-      ) : (
-        <div className="card table-card">
-          <table>
-            <thead>
-              <tr>
-                <th>Student</th>
-                <th>Status</th>
-                <th className="right">Mark attendance</th>
-              </tr>
-            </thead>
-            <tbody>
-              {registrations.map((reg) => {
-                const status = statusOf(reg)
-                const name = reg.student?.name || 'N/A'
+          {error && <p role="alert" className="error">{error}</p>}
 
-                return (
-                  <tr key={reg._id}>
-                    <td>
-                      <div className="student">
-                        <span className="avatar">{name.charAt(0).toUpperCase()}</span>
-                        <div>
-                          <div className="student-name">{name}</div>
-                          <div className="muted small">{reg.student?.email || 'N/A'}</div>
-                        </div>
-                      </div>
-                    </td>
-                    <td>
-                      <span className={`badge badge-${status.replace(' ', '-').toLowerCase()}`}>{status}</span>
-                    </td>
-                    <td className="right">
-                      <button
-                        type="button"
-                        className={`btn-present ${status === 'Present' ? 'active' : ''}`}
-                        onClick={() => handleMark(reg._id, 'Present')}
-                      >
-                        Present
-                      </button>
-                      <button
-                        type="button"
-                        className={`btn-absent ${status === 'Absent' ? 'active' : ''}`}
-                        onClick={() => handleMark(reg._id, 'Absent')}
-                      >
-                        Absent
-                      </button>
-                    </td>
+          {registrations.length > 0 && (
+            <div className="chip-row" style={{ marginBottom: 18 }}>
+              <span className="chip"><strong style={{ color: 'var(--green)' }}>{count('Present')}</strong> Present</span>
+              <span className="chip"><strong style={{ color: 'var(--red)' }}>{count('Absent')}</strong> Absent</span>
+              <span className="chip"><strong>{count('Not Marked')}</strong> Not marked</span>
+            </div>
+          )}
+
+          {registrations.length === 0 && !error ? (
+            <div className="empty">No registered students yet.</div>
+          ) : registrations.length > 0 && (
+            <div className="table-card">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Student</th>
+                    <th>Status</th>
+                    <th className="right">Mark attendance</th>
                   </tr>
-                )
-              })}
-            </tbody>
-          </table>
-        </div>
+                </thead>
+                <tbody>
+                  {registrations.map((reg) => {
+                    const status = statusOf(reg)
+                    const name = reg.student?.name || 'N/A'
+
+                    return (
+                      <tr key={reg._id}>
+                        <td>
+                          <div className="student">
+                            <span className="avatar avatar-quiet">{initials(name)}</span>
+                            <div>
+                              <div className="student-name">{name}</div>
+                              <div className="muted small">{reg.student?.email || 'N/A'}</div>
+                            </div>
+                          </div>
+                        </td>
+                        <td><StatusBadge status={status} /></td>
+                        <td className="right">
+                          <div className="segmented" role="group" aria-label={`Attendance for ${name}`}>
+                            <button
+                              type="button"
+                              className={`btn-present ${status === 'Present' ? 'active' : ''}`}
+                              aria-pressed={status === 'Present'}
+                              disabled={savingId === reg._id}
+                              onClick={() => handleMark(reg._id, 'Present')}
+                            >
+                              Present
+                            </button>
+                            <button
+                              type="button"
+                              className={`btn-absent ${status === 'Absent' ? 'active' : ''}`}
+                              aria-pressed={status === 'Absent'}
+                              disabled={savingId === reg._id}
+                              onClick={() => handleMark(reg._id, 'Absent')}
+                            >
+                              Absent
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    )
+                  })}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </>
       )}
-    </>
+    </main>
   )
 }

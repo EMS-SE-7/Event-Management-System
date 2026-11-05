@@ -2,8 +2,9 @@ import { useEffect, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { listEvents } from '../../api/events.js'
 import { ROLES, useAuth } from '../../auth-context'
-import StatusBadge from '../../components/StatusBadge.jsx'
-import { formatDate, seatsText } from '../../utils/format.js'
+import EventCard from '../../components/EventCard.jsx'
+import PageHead from '../../components/PageHead.jsx'
+import SeatsMeter from '../../components/SeatsMeter.jsx'
 import EventFilters from './EventFilters.jsx'
 
 // Loads and shows one set of results. It is re-created whenever the filters change,
@@ -41,42 +42,38 @@ function EventResults({ q, category, status, page, onPage }) {
 
   return (
     <>
-      {loading && <p className="muted">Loading events...</p>}
+      {!loading && !error && events.length > 0 && (
+        <p className="result-count">{total} {total === 1 ? 'event' : 'events'}</p>
+      )}
+      {loading && <p className="loading">Loading events</p>}
       {error && <p className="error" role="alert">Could not load events: {error}</p>}
       {!loading && !error && events.length === 0 && (
-        <p className="muted">{filtered ? 'No events match these filters.' : 'There are no events yet.'}</p>
+        <div className="empty">{filtered ? 'No events match these filters.' : 'There are no events yet.'}</div>
       )}
 
       <ul className="event-list">
         {events.map((event) => (
-          <li key={event._id} className="event-card">
-            <div className="event-card-head">
-              <h2>
-                <Link to={`/events/${event._id}`}>{event.title}</Link>
-              </h2>
-              <StatusBadge status={event.status} />
-            </div>
-            <p className="muted">
-              {event.category} &middot; {event.venue}
-            </p>
-            <p>{formatDate(event.startDateTime)}</p>
-            <p className="event-card-foot">
-              <span>{seatsText(event)}</span>
-              <span className={event.registrationOpen ? 'open' : 'closed'}>
-                {event.registrationOpen ? 'Registration open' : 'Registration closed'}
-              </span>
-            </p>
-          </li>
+          <EventCard
+            key={event._id}
+            event={event}
+            foot={
+              <SeatsMeter event={event}>
+                <span className={event.registrationOpen ? 'open' : 'closed'}>
+                  {event.registrationOpen ? 'Registration open' : 'Registration closed'}
+                </span>
+              </SeatsMeter>
+            }
+          />
         ))}
       </ul>
 
       {!loading && pages > 1 && (
         <nav className="pager" aria-label="Pages">
-          <button type="button" className="link-button" disabled={page <= 1} onClick={() => onPage(page - 1)}>
+          <button type="button" className="button button-ghost button-small" disabled={page <= 1} onClick={() => onPage(page - 1)}>
             &larr; Previous
           </button>
           <span className="muted">Page {page} of {pages}</span>
-          <button type="button" className="link-button" disabled={page >= pages} onClick={() => onPage(page + 1)}>
+          <button type="button" className="button button-ghost button-small" disabled={page >= pages} onClick={() => onPage(page + 1)}>
             Next &rarr;
           </button>
         </nav>
@@ -107,12 +104,11 @@ export default function BrowseEventsPage() {
 
   return (
     <main className="page">
-      <div className="page-head">
-        <h1>Browse events</h1>
+      <PageHead eyebrow="What's on" title="Browse events" intro="Talks, fests, workshops and matches across campus. Search by name or venue, or narrow it down by category and status.">
         {user?.role === ROLES.ORGANIZER && (
-          <Link to="/organizer/events/new" className="button">Create event</Link>
+          <Link to="/organizer/events/new" className="button button-signal">Create event</Link>
         )}
-      </div>
+      </PageHead>
 
       <EventFilters filters={filters} onChange={handleChange} />
       <EventResults
