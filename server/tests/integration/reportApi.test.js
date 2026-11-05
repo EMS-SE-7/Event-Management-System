@@ -64,6 +64,13 @@ describe('GET /api/reports/event/:eventId', () => {
     expect(Event.findById).not.toHaveBeenCalled();
   });
 
+  test('403 for an organizer who does not own the event', async () => {
+    Event.findById.mockResolvedValue({ _id: 'e1', title: 'Hackathon', capacity: 3, organizer: 'org2' });
+    const res = await request(app).get('/api/reports/event/e1').set('Authorization', organizer);
+    expect(res.status).toBe(403);
+    expect(res.body.error.code).toBe('FORBIDDEN');
+  });
+
   test('404 for an unknown event', async () => {
     Event.findById.mockResolvedValue(null);
     const res = await request(app).get('/api/reports/event/e1').set('Authorization', organizer);

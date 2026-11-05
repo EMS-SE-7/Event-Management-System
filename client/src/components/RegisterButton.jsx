@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Link } from 'react-router-dom'
 import { registerForEvent } from '../api/registrations.js'
 
 // Messages for the error codes in section 3 of the team integration guide.
@@ -15,7 +16,8 @@ const MESSAGES = {
 
 // REG-01 to REG-05 on the Event Details page.
 // The server makes the final decision; this button only shows the result.
-export default function RegisterButton({ event, onRegistered }) {
+// alreadyRegistered comes from the student's own registrations, so a reload still shows the right state.
+export default function RegisterButton({ event, onRegistered, alreadyRegistered = false }) {
   const [state, setState] = useState('idle') // idle | saving | done
   const [message, setMessage] = useState('')
 
@@ -27,31 +29,40 @@ export default function RegisterButton({ event, onRegistered }) {
       setState('done')
       if (onRegistered) onRegistered()
     } catch (err) {
+      if (err.code === 'ALREADY_REGISTERED') {
+        setState('done')
+        return
+      }
       setState('idle')
       setMessage(MESSAGES[err.code] || `Could not register: ${err.message}`)
     }
   }
 
-  if (state === 'done') {
+  if (state === 'done' || alreadyRegistered) {
     return (
-      <p className="open" role="status">
-        You are registered for this event.
-      </p>
+      <div className="register-slot">
+        <p className="notice" role="status">
+          You are registered for this event.
+        </p>
+        <Link to="/student/registrations" className="small">Manage in My Registrations</Link>
+      </div>
     )
   }
 
   if (!event.registrationOpen) {
     return (
-      <button type="button" disabled>
-        Registration closed
-      </button>
+      <div className="register-slot">
+        <button type="button" className="button" disabled>
+          Registration closed
+        </button>
+      </div>
     )
   }
 
   return (
-    <div>
-      <button type="button" onClick={handleClick} disabled={state === 'saving'}>
-        {state === 'saving' ? 'Registering...' : 'Register'}
+    <div className="register-slot">
+      <button type="button" className="button button-signal" onClick={handleClick} disabled={state === 'saving'}>
+        {state === 'saving' ? 'Registering…' : 'Register for this event'}
       </button>
       {message && (
         <p className="error" role="alert">

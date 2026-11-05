@@ -25,8 +25,10 @@ export default function CancelEventButton({ event, onCancelled }) {
 
   return (
     <div className="danger-zone">
-      <h2>Cancel this event</h2>
-      <p className="muted">Registration closes and the event shows as Cancelled. This cannot be undone.</p>
+      <div>
+        <h2>Cancel this event</h2>
+        <p className="muted small">Registration closes and the event shows as Cancelled. This cannot be undone.</p>
+      </div>
       {error && <p className="error" role="alert">Could not cancel the event: {error}</p>}
       <button type="button" className="button button-danger" onClick={handleClick} disabled={saving}>
         {saving ? 'Cancelling...' : 'Cancel event'}

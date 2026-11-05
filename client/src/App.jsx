@@ -16,7 +16,6 @@ import EventReportPage from './pages/EventReportPage'
 import ReportsPage from './pages/ReportsPage'
 import MyRegistrationsPage from './pages/student/MyRegistrationsPage'
 import EventParticipantsPage from './pages/organizer/EventParticipantsPage'
-import './App.css'
 
 function RootRedirect() {
   const { user } = useAuth()
@@ -44,10 +43,10 @@ export default function App() {
           <Route path="/organizer/events" element={<MyEventsPage />} />
           <Route path="/organizer/events/new" element={<CreateEventPage />} />
           <Route path="/organizer/events/:id/edit" element={<EditEventPage />} />
-          <Route path="/organizer/attendance" element={<div className="attendance-app"><AttendanceEventsPage /></div>} />
-          <Route path="/organizer/events/:eventId/attendance" element={<div className="attendance-app"><AttendancePage /></div>} />
-          <Route path="/organizer/reports" element={<div className="attendance-app"><ReportsPage /></div>} />
-          <Route path="/organizer/events/:eventId/report" element={<div className="attendance-app"><EventReportPage /></div>} />
+          <Route path="/organizer/attendance" element={<AttendanceEventsPage />} />
+          <Route path="/organizer/events/:eventId/attendance" element={<AttendancePage />} />
+          <Route path="/organizer/reports" element={<ReportsPage />} />
+          <Route path="/organizer/events/:eventId/report" element={<EventReportPage />} />
           <Route path="/organizer/events/:eventId/participants" element={<EventParticipantsPage />} />
         </Route>
 

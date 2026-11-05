@@ -50,45 +50,53 @@ export default function EventForm({ initialValues = EMPTY_EVENT, onSubmit, submi
 
   return (
     <form onSubmit={handleSubmit} noValidate className="event-form">
-      <Field label="Title" name="title" error={errors.title}>
-        {input('title', { type: 'text' })}
-      </Field>
-
-      <Field label="Category" name="category" error={errors.category}>
-        <select id="category" name="category" value={values.category} onChange={handleChange} aria-invalid={Boolean(errors.category)}>
-          <option value="">Choose a category</option>
-          {CATEGORIES.map((category) => (
-            <option key={category} value={category}>
-              {category}
-            </option>
-          ))}
-        </select>
-      </Field>
-
-      <Field label="Venue" name="venue" error={errors.venue}>
-        {input('venue', { type: 'text' })}
-      </Field>
-
-      <Field label="Description (optional)" name="description" error={errors.description}>
-        <textarea id="description" name="description" rows={4} value={values.description} onChange={handleChange} aria-invalid={Boolean(errors.description)} />
-      </Field>
-
-      <div className="field-row">
-        <Field label="Starts" name="startDateTime" error={errors.startDateTime}>
-          {input('startDateTime', { type: 'datetime-local' })}
+      <div className="form-section">
+        <span className="form-section-title">The basics</span>
+        <Field label="Title" name="title" error={errors.title}>
+          {input('title', { type: 'text', placeholder: 'e.g. Hackathon 2026' })}
         </Field>
-        <Field label="Ends" name="endDateTime" error={errors.endDateTime}>
-          {input('endDateTime', { type: 'datetime-local' })}
+
+        <div className="field-row">
+          <Field label="Category" name="category" error={errors.category}>
+            <select id="category" name="category" value={values.category} onChange={handleChange} aria-invalid={Boolean(errors.category)}>
+              <option value="">Choose a category</option>
+              {CATEGORIES.map((category) => (
+                <option key={category} value={category}>
+                  {category}
+                </option>
+              ))}
+            </select>
+          </Field>
+
+          <Field label="Venue" name="venue" error={errors.venue}>
+            {input('venue', { type: 'text', placeholder: 'e.g. MRD Auditorium' })}
+          </Field>
+        </div>
+
+        <Field label="Description (optional)" name="description" error={errors.description}>
+          <textarea id="description" name="description" rows={4} value={values.description} onChange={handleChange} aria-invalid={Boolean(errors.description)} />
         </Field>
       </div>
 
-      <div className="field-row">
-        <Field label="Registration deadline" name="registrationDeadline" error={errors.registrationDeadline}>
-          {input('registrationDeadline', { type: 'datetime-local' })}
-        </Field>
-        <Field label="Capacity" name="capacity" error={errors.capacity}>
-          {input('capacity', { type: 'number', min: 1 })}
-        </Field>
+      <div className="form-section">
+        <span className="form-section-title">When and how many</span>
+        <div className="field-row">
+          <Field label="Starts" name="startDateTime" error={errors.startDateTime}>
+            {input('startDateTime', { type: 'datetime-local' })}
+          </Field>
+          <Field label="Ends" name="endDateTime" error={errors.endDateTime}>
+            {input('endDateTime', { type: 'datetime-local' })}
+          </Field>
+        </div>
+
+        <div className="field-row">
+          <Field label="Registration deadline" name="registrationDeadline" error={errors.registrationDeadline}>
+            {input('registrationDeadline', { type: 'datetime-local' })}
+          </Field>
+          <Field label="Capacity" name="capacity" error={errors.capacity}>
+            {input('capacity', { type: 'number', min: 1, placeholder: 'Seats' })}
+          </Field>
+        </div>
       </div>
 
       {formError && (
@@ -97,9 +105,11 @@ export default function EventForm({ initialValues = EMPTY_EVENT, onSubmit, submi
         </p>
       )}
 
-      <button type="submit" className="button" disabled={submitting}>
-        {submitting ? submittingLabel : submitLabel}
-      </button>
+      <div className="form-actions">
+        <button type="submit" className="button button-signal" disabled={submitting}>
+          {submitting ? submittingLabel : submitLabel}
+        </button>
+      </div>
     </form>
   )
 }

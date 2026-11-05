@@ -1,16 +1,21 @@
 import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { getEventReport } from '../api/reportApi'
+import PageHead from '../components/PageHead.jsx'
+import StatusBadge from '../components/StatusBadge.jsx'
+import { formatDate } from '../utils/format.js'
 
-function StatCard({ label, value, note }) {
+function Stat({ label, value, note, tone }) {
   return (
-    <div className="card stat-card">
-      <div className="muted small">{label}</div>
-      <div className="stat-value">{value}</div>
-      {note && <div className="muted small">{note}</div>}
+    <div className={`stat${tone ? ` stat-${tone}` : ''}`}>
+      <span className="stat-label">{label}</span>
+      <span className="stat-value">{value}</span>
+      {note && <span className="stat-note">{note}</span>}
     </div>
   )
 }
+
+const pct = (part, whole) => (whole ? (part / whole) * 100 : 0)
 
 export default function EventReportPage() {
   const { eventId } = useParams()
@@ -26,56 +31,65 @@ export default function EventReportPage() {
   }, [eventId])
 
   if (loading) {
-    return <p className="page">Loading report...</p>
+    return <main className="page"><p className="loading">Loading report</p></main>
   }
 
   if (error) {
     return (
-      <div className="page">
-        <Link to="/organizer/reports" className="back-link">&larr; Back to reports</Link>
+      <main className="page">
+        <Link to="/organizer/reports" className="back-link">&larr; All reports</Link>
         <p role="alert" className="error">{error}</p>
-      </div>
+      </main>
     )
   }
 
   const { event, registration, attendance } = report
   const marked = attendance.present + attendance.absent
+  const intro = [event.venue, event.startDateTime && formatDate(event.startDateTime)].filter(Boolean).join(' · ')
 
   return (
-    <div className="page">
-      <Link to="/organizer/reports" className="back-link">&larr; Back to reports</Link>
-      <h2 className="page-title">{event.title}</h2>
-      <p className="muted">{event.venue} &middot; {event.status}</p>
+    <main className="page">
+      <Link to="/organizer/reports" className="back-link">&larr; All reports</Link>
+      <PageHead eyebrow="Event report" title={event.title} intro={intro}>
+        <StatusBadge status={event.status} />
+        <Link to={`/organizer/events/${event.id}/attendance`} className="button button-ghost">Go to attendance</Link>
+      </PageHead>
 
-      <h3>Registration statistics</h3>
-      <div className="stat-grid">
-        <StatCard label="Total registrations" value={registration.total} />
-        <StatCard
-          label="Capacity"
-          value={registration.capacity ?? '-'}
-          note={registration.seatsLeft !== null ? `${registration.seatsLeft} seats left` : ''}
-        />
-        <StatCard label="Filled" value={`${registration.fillRate}%`} />
-        <StatCard label="Cancelled" value={registration.cancelled} />
-      </div>
-
-      <h3>Attendance statistics</h3>
-      <div className="stat-grid">
-        <StatCard label="Present" value={attendance.present} />
-        <StatCard label="Absent" value={attendance.absent} />
-        <StatCard label="Not marked" value={attendance.notMarked} />
-      </div>
-
-      {registration.total > 0 && (
-        <div className="progress" title={`${marked} of ${registration.total} marked`}>
-          <div className="progress-present" style={{ width: `${(attendance.present / registration.total) * 100}%` }} />
-          <div className="progress-absent" style={{ width: `${(attendance.absent / registration.total) * 100}%` }} />
+      <section>
+        <div className="section-head"><h2>Registrations</h2></div>
+        <div className="stats">
+          <Stat label="Registered" value={registration.total} note={registration.capacity !== null ? `of ${registration.capacity} seats` : ''} />
+          <Stat label="Seats left" value={registration.seatsLeft ?? '–'} />
+          <Stat label="Filled" value={`${registration.fillRate}%`} />
+          <Stat label="Cancelled" value={registration.cancelled} note="registrations withdrawn" />
         </div>
-      )}
+      </section>
 
-      <p>
-        <Link to={`/organizer/events/${event.id}/attendance`}>Go to attendance for this event</Link>
-      </p>
-    </div>
+      <section className="section">
+        <div className="section-head">
+          <h2>Attendance</h2>
+          <span className="mono muted">{marked} of {registration.total} marked</span>
+        </div>
+        <div className="stats">
+          <Stat label="Present" value={attendance.present} tone="present" />
+          <Stat label="Absent" value={attendance.absent} tone="absent" />
+          <Stat label="Not marked" value={attendance.notMarked} />
+        </div>
+
+        {registration.total > 0 && (
+          <div style={{ marginTop: 20 }}>
+            <div className="split-bar" title={`${marked} of ${registration.total} marked`}>
+              <div className="seg-present" style={{ width: `${pct(attendance.present, registration.total)}%` }} />
+              <div className="seg-absent" style={{ width: `${pct(attendance.absent, registration.total)}%` }} />
+            </div>
+            <div className="legend">
+              <span><i style={{ background: 'var(--green)' }} /> Present</span>
+              <span><i style={{ background: 'var(--red)' }} /> Absent</span>
+              <span><i style={{ background: 'var(--sunken)', border: '1px solid var(--line-strong)' }} /> Not marked</span>
+            </div>
+          </div>
+        )}
+      </section>
+    </main>
   )
 }

@@ -1,5 +1,7 @@
 const Registration = require('../models/Registration');
 const Event = require('../models/Event');
+const sendError = require('../utils/sendError');
+const { computeStatus } = require('../utils/eventStatus');
 
 const ALLOWED_STATUS = ['Present', 'Absent'];
 
@@ -22,14 +24,14 @@ exports.getMyEvents = async (req, res) => {
       return {
         id: event._id,
         title: event.title,
-        status: event.status,
+        status: computeStatus(event),
         registered
       };
     }));
 
     return res.json({ events: list });
   } catch (error) {
-    return res.status(500).json({ message: 'Server error' });
+    return sendError(res, 500, 'SERVER_ERROR', 'Server error');
   }
 };
 
@@ -40,11 +42,11 @@ exports.getEventAttendance = async (req, res) => {
     const event = await Event.findById(req.params.eventId);
 
     if (!event) {
-      return res.status(404).json({ message: 'Event not found' });
+      return sendError(res, 404, 'NOT_FOUND', 'Event not found');
     }
 
     if (String(event.organizer) !== String(req.user.id)) {
-      return res.status(403).json({ message: 'Not the organizer of this event' });
+      return sendError(res, 403, 'FORBIDDEN', 'Not the organizer of this event');
     }
 
     const registrations = await Registration.find({
@@ -58,9 +60,9 @@ exports.getEventAttendance = async (req, res) => {
     });
   } catch (error) {
     if (isCastError(error)) {
-      return res.status(400).json({ message: 'Invalid event id' });
+      return sendError(res, 400, 'VALIDATION_ERROR', 'Invalid event id');
     }
-    return res.status(500).json({ message: 'Server error' });
+    return sendError(res, 500, 'SERVER_ERROR', 'Server error');
   }
 };
 
@@ -72,32 +74,32 @@ exports.markAttendance = async (req, res) => {
     const { status } = req.body || {};
 
     if (!ALLOWED_STATUS.includes(status)) {
-      return res.status(400).json({ message: 'Status must be Present or Absent' });
+      return sendError(res, 400, 'VALIDATION_ERROR', 'Status must be Present or Absent');
     }
 
     const registration = await Registration.findById(req.params.registrationId);
 
     if (!registration) {
-      return res.status(404).json({ message: 'Registration not found' });
+      return sendError(res, 404, 'NOT_FOUND', 'Registration not found');
     }
 
     const event = await Event.findById(registration.event);
 
     if (!event) {
-      return res.status(404).json({ message: 'Event not found' });
+      return sendError(res, 404, 'NOT_FOUND', 'Event not found');
     }
 
     // ownership is checked before anything about the registration is revealed
     if (String(event.organizer) !== String(req.user.id)) {
-      return res.status(403).json({ message: 'Not the organizer of this event' });
+      return sendError(res, 403, 'FORBIDDEN', 'Not the organizer of this event');
     }
 
     if (registration.status === 'Cancelled') {
-      return res.status(400).json({ message: 'Registration is cancelled' });
+      return sendError(res, 400, 'REGISTRATION_CANCELLED', 'Registration is cancelled');
     }
 
     if (event.status === 'Cancelled') {
-      return res.status(400).json({ message: 'Event is cancelled' });
+      return sendError(res, 400, 'EVENT_CANCELLED', 'Event is cancelled');
     }
 
     registration.attendanceStatus = status;
@@ -108,8 +110,8 @@ exports.markAttendance = async (req, res) => {
     return res.json({ status: 'success', registration });
   } catch (error) {
     if (isCastError(error)) {
-      return res.status(400).json({ message: 'Invalid registration id' });
+      return sendError(res, 400, 'VALIDATION_ERROR', 'Invalid registration id');
     }
-    return res.status(500).json({ message: 'Server error' });
+    return sendError(res, 500, 'SERVER_ERROR', 'Server error');
   }
 };

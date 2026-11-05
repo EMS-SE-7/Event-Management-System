@@ -1,4 +1,6 @@
-// Shows an event's calculated status: Upcoming, Ongoing, Completed or Cancelled.
+// Shows a status as a small stamp: event statuses (Upcoming, Ongoing, Completed, Cancelled)
+// and registration/attendance statuses (Registered, Present, Absent, Not Marked).
 export default function StatusBadge({ status }) {
-  return <span className={`badge badge-${status.toLowerCase()}`}>{status}</span>
+  if (!status) return null
+  return <span className={`badge badge-${status.replace(/\s+/g, '-').toLowerCase()}`}>{status}</span>
 }

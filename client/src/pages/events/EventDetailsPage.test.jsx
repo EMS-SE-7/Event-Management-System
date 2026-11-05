@@ -32,6 +32,16 @@ describe('Event Details', () => {
     expect(screen.queryByRole('link', { name: 'Edit or cancel' })).not.toBeInTheDocument()
   })
 
+  test('TC-REG-03: a student who is already registered sees that instead of the Register button', async () => {
+    renderAs(student, '/events/ev1', {
+      ...showEvent(apiEvent()),
+      'GET /registrations/mine': () => reply(200, { data: [{ _id: 'r1', status: 'Registered', event: { _id: 'ev1' } }] }),
+    })
+
+    expect(await screen.findByText('You are registered for this event.')).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /register/i })).not.toBeInTheDocument()
+  })
+
   test('TC-EVENT-04: the owner sees Edit, Attendance and Report links instead of Register', async () => {
     renderAs(organizer, '/events/ev1', showEvent(apiEvent()))
 

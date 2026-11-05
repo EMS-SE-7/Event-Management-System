@@ -1,5 +1,7 @@
 const Registration = require('../models/Registration');
 const Event = require('../models/Event');
+const sendError = require('../utils/sendError');
+const { computeStatus } = require('../utils/eventStatus');
 const { buildEventStats } = require('../utils/reportStats');
 
 function isCastError(error) {
@@ -23,7 +25,7 @@ exports.getMyReports = async (req, res) => {
       return {
         id: event._id,
         title: event.title,
-        status: event.status,
+        status: computeStatus(event),
         startDateTime: event.startDateTime,
         ...stats
       };
@@ -37,7 +39,7 @@ exports.getMyReports = async (req, res) => {
 
     return res.json({ events: reports, totals });
   } catch (error) {
-    return res.status(500).json({ message: 'Server error' });
+    return sendError(res, 500, 'SERVER_ERROR', 'Server error');
   }
 };
 
@@ -48,7 +50,12 @@ exports.getEventReport = async (req, res) => {
     const event = await Event.findById(req.params.eventId);
 
     if (!event) {
-      return res.status(404).json({ message: 'Event not found' });
+      return sendError(res, 404, 'NOT_FOUND', 'Event not found');
+    }
+
+    // An organizer only sees reports for the events they manage
+    if (String(event.organizer) !== String(req.user.id)) {
+      return sendError(res, 403, 'FORBIDDEN', 'Not the organizer of this event');
     }
 
     const registrations = await getRegistrations(event._id);
@@ -57,16 +64,18 @@ exports.getEventReport = async (req, res) => {
       event: {
         id: event._id,
         title: event.title,
-        status: event.status,
+        status: computeStatus(event),
         venue: event.venue,
-        startDateTime: event.startDateTime
+        category: event.category,
+        startDateTime: event.startDateTime,
+        endDateTime: event.endDateTime
       },
       ...buildEventStats(registrations, event.capacity)
     });
   } catch (error) {
     if (isCastError(error)) {
-      return res.status(400).json({ message: 'Invalid event id' });
+      return sendError(res, 400, 'VALIDATION_ERROR', 'Invalid event id');
     }
-    return res.status(500).json({ message: 'Server error' });
+    return sendError(res, 500, 'SERVER_ERROR', 'Server error');
   }
 };

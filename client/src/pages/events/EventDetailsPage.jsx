@@ -1,16 +1,43 @@
 import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { getEvent } from '../../api/events.js'
+import { getMyRegistrations } from '../../api/registrations.js'
 import { ROLES, useAuth } from '../../auth-context'
-import StatusBadge from '../../components/StatusBadge.jsx'
+import CategoryTag from '../../components/CategoryTag.jsx'
+import DateStub from '../../components/DateStub.jsx'
+import Icon from '../../components/Icon.jsx'
 import RegisterButton from '../../components/RegisterButton.jsx'
-import { formatDate, seatsText } from '../../utils/format.js'
+import SeatsMeter from '../../components/SeatsMeter.jsx'
+import StatusBadge from '../../components/StatusBadge.jsx'
+import { formatDate } from '../../utils/format.js'
+
+// For a student: is there an active registration for this event? null while still checking.
+function useRegisteredFor(eventId, enabled) {
+  const [registered, setRegistered] = useState(enabled ? null : false)
+  useEffect(() => {
+    if (!enabled) return undefined
+    let cancelled = false
+    getMyRegistrations('Registered')
+      .then((result) => {
+        const list = Array.isArray(result.data) ? result.data : []
+        const found = list.some((r) => String(r.event?._id ?? r.event) === String(eventId) && r.status === 'Registered')
+        if (!cancelled) setRegistered(found)
+      })
+      .catch(() => !cancelled && setRegistered(false)) // the server still blocks a double registration
+    return () => {
+      cancelled = true
+    }
+  }, [eventId, enabled])
+  return registered
+}
 
 function EventDetails({ id }) {
   const { user } = useAuth()
   const [event, setEvent] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
+  const isStudent = user?.role !== ROLES.ORGANIZER
+  const registered = useRegisteredFor(id, isStudent)
 
   useEffect(() => {
     let cancelled = false
@@ -43,7 +70,7 @@ function EventDetails({ id }) {
     })
   }
 
-  if (loading) return <p className="muted">Loading event...</p>
+  if (loading) return <p className="loading">Loading event</p>
 
   if (error) {
     return (
@@ -56,47 +83,71 @@ function EventDetails({ id }) {
   const isOwner = user?.role === ROLES.ORGANIZER && String(event.organizer) === String(user.id)
 
   return (
-    <article className="event-details">
-      <div className="event-card-head">
-        <h1>{event.title}</h1>
-        <StatusBadge status={event.status} />
-      </div>
-      <p className="muted">{event.category}</p>
-
-      {event.description && <p className="description">{event.description}</p>}
-
-      <dl className="facts">
-        <dt>Venue</dt>
-        <dd>{event.venue}</dd>
-        <dt>Starts</dt>
-        <dd>{formatDate(event.startDateTime)}</dd>
-        <dt>Ends</dt>
-        <dd>{formatDate(event.endDateTime)}</dd>
-        <dt>Register by</dt>
-        <dd>{formatDate(event.registrationDeadline)}</dd>
-        <dt>Seats</dt>
-        <dd>{seatsText(event)}</dd>
-      </dl>
-
-      <p className={event.registrationOpen ? 'open' : 'closed'}>
-        {event.registrationOpen ? 'Registration is open' : 'Registration is closed'}
-      </p>
-
-      {/* Students register; the organizer who owns the event gets management links instead. */}
-      {user?.role !== ROLES.ORGANIZER && (
-        <div className="register-slot">
-          <RegisterButton event={event} onRegistered={handleRegistered} />
+    <article>
+      <header className="event-hero" data-cat={event.category}>
+        <DateStub iso={event.startDateTime} className="hero-stub" />
+        <div className="hero-text">
+          <CategoryTag category={event.category} />
+          <h1>{event.title}</h1>
+          <StatusBadge status={event.status} />
         </div>
-      )}
-      {isOwner && (
-        <p className="card-actions">
-          {(event.status === 'Upcoming' || event.status === 'Ongoing') && (
-            <Link to={`/organizer/events/${event._id}/edit`} className="button">Edit or cancel</Link>
+      </header>
+
+      <div className="event-layout">
+        <section>
+          <span className="eyebrow">About this event</span>
+          <div style={{ marginTop: 12 }}>
+            {event.description ? (
+              <p className="prose description">{event.description}</p>
+            ) : (
+              <p className="prose prose-empty">The organizer has not added a description.</p>
+            )}
+          </div>
+        </section>
+
+        <aside className="panel panel-sticky">
+          <dl className="facts">
+            <div>
+              <dt>Venue</dt>
+              <dd>{event.venue}</dd>
+            </div>
+            <div>
+              <dt>Starts</dt>
+              <dd>{formatDate(event.startDateTime)}</dd>
+            </div>
+            <div>
+              <dt>Ends</dt>
+              <dd>{formatDate(event.endDateTime)}</dd>
+            </div>
+            <div>
+              <dt>Register by</dt>
+              <dd>{formatDate(event.registrationDeadline)}</dd>
+            </div>
+          </dl>
+
+          <SeatsMeter event={event} />
+
+          <p className={event.registrationOpen ? 'open' : 'closed'}>
+            {event.registrationOpen ? 'Registration is open' : 'Registration is closed'}
+          </p>
+
+          {/* Students register; the organizer who owns the event gets management links instead. */}
+          {isStudent && registered !== null && (
+            <RegisterButton event={event} onRegistered={handleRegistered} alreadyRegistered={registered} />
           )}
-          <Link to={`/organizer/events/${event._id}/attendance`}>Attendance</Link>
-          <Link to={`/organizer/events/${event._id}/report`}>Report</Link>
-        </p>
-      )}
+          {isOwner && (
+            <div className="owner-tools">
+              <span className="eyebrow">You run this event</span>
+              {(event.status === 'Upcoming' || event.status === 'Ongoing') && (
+                <Link to={`/organizer/events/${event._id}/edit`} className="button">Edit or cancel</Link>
+              )}
+              <Link to={`/organizer/events/${event._id}/attendance`} className="button button-ghost">Attendance</Link>
+              <Link to={`/organizer/events/${event._id}/participants`} className="button button-ghost">Participants</Link>
+              <Link to={`/organizer/events/${event._id}/report`} className="button button-ghost">Report</Link>
+            </div>
+          )}
+        </aside>
+      </div>
     </article>
   )
 }
@@ -106,9 +157,9 @@ export default function EventDetailsPage() {
   const { id } = useParams()
   return (
     <main className="page">
-      <p>
-        <Link to="/events">&larr; Back to events</Link>
-      </p>
+      <Link to="/events" className="back-link">
+        <Icon name="arrowLeft" size={14} /> All events
+      </Link>
       {/* key={id} starts a fresh page whenever the event changes */}
       <EventDetails key={id} id={id} />
     </main>
