@@ -13,8 +13,8 @@ The workflow is [`.github/workflows/ci.yml`](../.github/workflows/ci.yml).
 The app runs as **one free Render web service**: Express serves the API under `/api` and the built React app for every other path, so there is one URL and no CORS set-up. The database is the free MongoDB Atlas cluster.
 
 ```
-push / PR ──► server-tests ─┐
-              client-tests ─┼──► deploy (main only) ──► Render deploy hook ──► wait for /api/health
+push / PR ──► server ───────┐
+              client ───────┼──► deploy (main only) ──► Render deploy hook ──► wait for /api/health
               system-tests ─┘
 ```
 

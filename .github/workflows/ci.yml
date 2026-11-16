@@ -24,8 +24,9 @@ env:
   NODE_VERSION: 22
 
 jobs:
-  server-tests:
-    name: Server unit and integration tests
+  # The job names "server" and "client" are required status checks in branch protection; keep them.
+  server:
+    name: server
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -52,8 +53,8 @@ jobs:
           name: server-coverage
           path: server/coverage
 
-  client-tests:
-    name: Client lint, unit and integration tests, build
+  client:
+    name: client
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -112,7 +113,7 @@ jobs:
 
   deploy:
     name: Deploy to Render
-    needs: [server-tests, client-tests, system-tests]
+    needs: [server, client, system-tests]
     if: github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
     runs-on: ubuntu-latest
     environment:
