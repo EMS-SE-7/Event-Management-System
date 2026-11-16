@@ -1,13 +1,31 @@
-name: CI
+name: CI/CD
+
+# Every push and pull request to main runs all three automated test levels:
+#   unit + integration tests with coverage (server: Jest, client: Vitest) and
+#   system tests (Playwright drives the production build in a real browser).
+# A push to main then deploys to Render, but only if every test passed.
+# Deploy set-up (Render, MongoDB Atlas, GitHub secret): docs/deployment.md
 
 on:
-  pull_request:
-    branches: [main]
   push:
     branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+permissions:
+  contents: read
+
+env:
+  NODE_VERSION: 22
 
 jobs:
-  server:
+  server-tests:
+    name: Server unit and integration tests
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -16,18 +34,26 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: ${{ env.NODE_VERSION }}
           cache: npm
           cache-dependency-path: server/package-lock.json
-      - run: npm ci
-      - run: npm test -- --coverage
-      - uses: actions/upload-artifact@v4
-        if: always()
+      - name: Cache the in-memory MongoDB binary
+        uses: actions/cache@v4
         with:
-          name: server-test-results
+          path: ~/.cache/mongodb-binaries
+          key: mongodb-binaries-${{ runner.os }}-${{ hashFiles('server/package-lock.json') }}
+      - run: npm ci
+      - name: Run unit and integration tests with coverage
+        run: npm run test:ci
+      - name: Keep the coverage report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: server-coverage
           path: server/coverage
 
-  client:
+  client-tests:
+    name: Client lint, unit and integration tests, build
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -36,10 +62,88 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: ${{ env.NODE_VERSION }}
           cache: npm
           cache-dependency-path: client/package-lock.json
       - run: npm ci
-      - run: npm run lint --if-present
-      - run: npm test --if-present
+      - run: npm run lint
+      - name: Run unit and integration tests with coverage
+        run: npm run test:ci
       - run: npm run build
+      - name: Keep the coverage report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: client-coverage
+          path: client/coverage
+
+  system-tests:
+    name: System tests (end to end in Chromium)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+      - name: Cache the in-memory MongoDB binary
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/mongodb-binaries
+          key: mongodb-binaries-${{ runner.os }}-${{ hashFiles('server/package-lock.json') }}
+      - name: Install and build the app
+        run: |
+          npm ci --prefix server
+          npm ci --prefix client
+          npm run build --prefix client
+      - name: Install Playwright and Chromium
+        working-directory: system-tests
+        run: |
+          npm ci
+          npx playwright install --with-deps chromium
+      - name: Run system tests
+        working-directory: system-tests
+        run: npm test
+      - name: Keep the system test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: system-test-results
+          path: system-tests/results
+
+  deploy:
+    name: Deploy to Render
+    needs: [server-tests, client-tests, system-tests]
+    if: github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
+    runs-on: ubuntu-latest
+    environment:
+      name: production
+      url: ${{ vars.RENDER_APP_URL }}
+    steps:
+      - name: Trigger the Render deploy hook
+        env:
+          RENDER_DEPLOY_HOOK_URL: ${{ secrets.RENDER_DEPLOY_HOOK_URL }}
+        run: |
+          if [ -z "$RENDER_DEPLOY_HOOK_URL" ]; then
+            echo "::warning::RENDER_DEPLOY_HOOK_URL is not set, so nothing was deployed. See docs/deployment.md."
+            exit 0
+          fi
+          curl --fail --silent --show-error -X POST "$RENDER_DEPLOY_HOOK_URL"
+
+      - name: Wait for the new version to be live
+        if: vars.RENDER_APP_URL != ''
+        env:
+          APP_URL: ${{ vars.RENDER_APP_URL }}
+          SHA: ${{ github.sha }}
+        run: |
+          # /api/health reports the deployed commit. A free Render build takes a few minutes.
+          for i in $(seq 1 40); do
+            body=$(curl --silent --max-time 60 "$APP_URL/api/health" || true)
+            echo "Attempt $i: $body"
+            if echo "$body" | grep -q "\"commit\":\"$SHA\""; then
+              echo "Live at $APP_URL with commit ${SHA::7}"
+              exit 0
+            fi
+            sleep 20
+          done
+          echo "::error::$APP_URL did not report commit ${SHA::7} within about 15 minutes. Check the Render logs."
+          exit 1

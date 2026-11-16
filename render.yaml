@@ -1,0 +1,26 @@
+# Render Blueprint: https://render.com/docs/blueprint-spec
+# One free web service runs the Express API and also serves the built React app,
+# so the whole system lives at one URL. GitHub Actions deploys it through a deploy
+# hook only after every test passes (see .github/workflows/ci.yml and docs/deployment.md).
+services:
+  - type: web
+    name: pesu-ems
+    runtime: node
+    plan: free
+    region: singapore
+    branch: main
+    autoDeployTrigger: "off" # CI triggers deploys, so a commit that fails tests never goes live
+    buildCommand: npm ci --prefix client --include=dev && npm run build --prefix client && npm ci --prefix server --omit=dev
+    startCommand: npm start --prefix server
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
+      - key: NODE_ENV
+        value: production
+      - key: MONGO_URI
+        sync: false # entered in the Render dashboard: the Atlas connection string
+      - key: JWT_SECRET
+        generateValue: true
+      - key: JWT_EXPIRES_IN
+        value: 1d
