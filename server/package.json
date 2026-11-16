@@ -8,7 +8,10 @@
     "start": "node src/index.js",
     "test": "jest",
     "seed": "node src/scripts/seedUsers.js",
-    "seed:events": "node src/scripts/seedEvents.js"
+    "seed:events": "node src/scripts/seedEvents.js",
+    "test:ci": "jest --ci --coverage --json --outputFile=coverage/test-results.json",
+    "test:unit": "jest --selectProjects unit",
+    "test:integration": "jest --selectProjects integration"
   },
   "keywords": [],
   "author": "",
@@ -26,5 +29,45 @@
     "mongodb-memory-server": "^11.3.0",
     "nodemon": "^3.1.14",
     "supertest": "^7.3.1"
+  },
+  "jest": {
+    "collectCoverageFrom": [
+      "src/**/*.js",
+      "!src/**/*.test.js",
+      "!src/scripts/**"
+    ],
+    "coverageReporters": [
+      "text",
+      "text-summary",
+      "html",
+      "json",
+      "json-summary",
+      "lcovonly"
+    ],
+    "projects": [
+      {
+        "displayName": "unit",
+        "testEnvironment": "node",
+        "testMatch": [
+          "<rootDir>/tests/unit/**/*.test.js",
+          "<rootDir>/tests/eventStatus.test.js",
+          "<rootDir>/tests/event.model.test.js",
+          "<rootDir>/tests/serveClient.test.js"
+        ]
+      },
+      {
+        "displayName": "integration",
+        "testEnvironment": "node",
+        "testMatch": [
+          "<rootDir>/tests/integration/**/*.test.js",
+          "<rootDir>/tests/events.*.test.js",
+          "<rootDir>/tests/registrations*.test.js",
+          "<rootDir>/src/**/*.test.js"
+        ]
+      }
+    ]
+  },
+  "engines": {
+    "node": ">=20.19"
   }
 }
