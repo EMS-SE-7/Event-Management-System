@@ -1,0 +1,1220 @@
+{
+  "config": {
+    "argv": [
+      "/opt/node22/bin/node",
+      "system-tests/node_modules/.bin/playwright",
+      "test"
+    ],
+    "configFile": "system-tests/playwright.config.js",
+    "rootDir": "system-tests/tests",
+    "failOnFlakyTests": false,
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "system-tests/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "chromium",
+        "name": "chromium",
+        "testDir": "system-tests/tests",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 60000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list",
+        null
+      ],
+      [
+        "json",
+        {
+          "outputFile": "results/test-results.json"
+        }
+      ],
+      [
+        "html",
+        {
+          "outputFolder": "results/html",
+          "open": "never"
+        }
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.63.0",
+    "workers": 1,
+    "webServer": {
+      "command": "node test-server.js",
+      "url": "http://localhost:4173/api/health",
+      "timeout": 120000,
+      "reuseExistingServer": false,
+      "env": {
+        "PORT": "4173"
+      }
+    }
+  },
+  "suites": [
+    {
+      "title": "01-authentication.spec.js",
+      "file": "01-authentication.spec.js",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Authentication and roles",
+          "file": "01-authentication.spec.js",
+          "line": 5,
+          "column": 6,
+          "specs": [
+            {
+              "title": "TC-SYS-01 (AUTH-07): a wrong password is rejected with a message and no login",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 930,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "steps": [
+                        {
+                          "title": "Open the Login page and enter a registered email with a wrong password",
+                          "duration": 576
+                        },
+                        {
+                          "title": "An error message is shown and the user stays on the Login page",
+                          "duration": 218
+                        }
+                      ],
+                      "startTime": "2026-11-16T14:16:49.318Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "2909fbfefd46bc7b8b3b-8200b8907ff2ff7b13c3",
+              "file": "01-authentication.spec.js",
+              "line": 6,
+              "column": 3
+            },
+            {
+              "title": "TC-SYS-02 (AUTH-01, AUTH-05): an organizer signs in and gets the organizer menu",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 584,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "steps": [
+                        {
+                          "title": "Log in with a seeded organizer account; the organizer dashboard opens",
+                          "duration": 423
+                        },
+                        {
+                          "title": "The menu shows the organizer-only items Create Event and Reports",
+                          "duration": 27
+                        }
+                      ],
+                      "startTime": "2026-11-16T14:16:50.349Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "2909fbfefd46bc7b8b3b-6798c8564f50f6f9f047",
+              "file": "01-authentication.spec.js",
+              "line": 19,
+              "column": 3
+            },
+            {
+              "title": "TC-SYS-03 (AUTH-01, AUTH-05): a student signs in and gets the student menu only",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 544,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "steps": [
+                        {
+                          "title": "Log in with a seeded student account; the student dashboard opens",
+                          "duration": 427
+                        },
+                        {
+                          "title": "The menu shows My Registrations and no organizer items",
+                          "duration": 12
+                        }
+                      ],
+                      "startTime": "2026-11-16T14:16:50.947Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "2909fbfefd46bc7b8b3b-a07cbe445c92dad7401c",
+              "file": "01-authentication.spec.js",
+              "line": 28,
+              "column": 3
+            },
+            {
+              "title": "TC-SYS-04 (AUTH-06): a student cannot open organizer pages or call organizer APIs",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 974,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "steps": [
+                        {
+                          "title": "Log in as a student",
+                          "duration": 645
+                        },
+                        {
+                          "title": "Typing the Create Event address sends the student back to their dashboard",
+                          "duration": 88
+                        },
+                        {
+                          "title": "Calling POST /api/events directly with the student token returns 403 Forbidden",
+                          "duration": 124
+                        }
+                      ],
+                      "startTime": "2026-11-16T14:16:51.507Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "2909fbfefd46bc7b8b3b-63e971fe632d3eeb590a",
+              "file": "01-authentication.spec.js",
+              "line": 37,
+              "column": 3
+            },
+            {
+              "title": "TC-SYS-05 (AUTH-01): a new student signs up and lands on the student dashboard",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 644,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "steps": [
+                        {
+                          "title": "Fill in the Student registration form with a new @pesu.pes.edu email",
+                          "duration": 393
+                        },
+                        {
+                          "title": "The account is created and the student dashboard opens",
+                          "duration": 101
+                        }
+                      ],
+                      "startTime": "2026-11-16T14:16:52.492Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "2909fbfefd46bc7b8b3b-5eb87fed23a3e1469a23",
+              "file": "01-authentication.spec.js",
+              "line": 50,
+              "column": 3
+            },
+            {
+              "title": "TC-SYS-06 (AUTH-05): logging out ends the session and protected pages go back to login",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 624,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "steps": [
+                        {
+                          "title": "Log in as a student, then click Log out",
+                          "duration": 482
+                        },
+                        {
+                          "title": "Opening My Registrations now redirects to the Login page",
+                          "duration": 53
+                        }
+                      ],
+                      "startTime": "2026-11-16T14:16:53.149Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "2909fbfefd46bc7b8b3b-d46b68ac1cb286ef9541",
+              "file": "01-authentication.spec.js",
+              "line": 63,
+              "column": 3
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "02-event-lifecycle.spec.js",
+      "file": "02-event-lifecycle.spec.js",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Event lifecycle across modules",
+          "file": "02-event-lifecycle.spec.js",
+          "line": 14,
+          "column": 6,
+          "specs": [
+            {
+              "title": "TC-SYS-07 (EVENT-02): the create form rejects missing mandatory fields",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [
+                    {
+                      "type": "serial",
+                      "location": {
+                        "file": "system-tests/tests/02-event-lifecycle.spec.js",
+                        "line": 0,
+                        "column": 0
+                      }
+                    }
+                  ],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 608,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "steps": [
+                        {
+                          "title": "Log in as an organizer and open Create Event",
+                          "duration": 418
+                        },
+                        {
+                          "title": "Submit the empty form",
+                          "duration": 71
+                        },
+                        {
+                          "title": "Field errors are shown and no event is created",
+                          "duration": 27
+                        }
+                      ],
+                      "startTime": "2026-11-16T14:16:53.789Z",
+                      "annotations": [
+                        {
+                          "type": "serial",
+                          "location": {
+                            "file": "system-tests/tests/02-event-lifecycle.spec.js",
+                            "line": 0,
+                            "column": 0
+                          }
+                        }
+                      ],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "9c7544289b9bfa20e52b-ff2bd2c7bb4af33dba20",
+              "file": "02-event-lifecycle.spec.js",
+              "line": 15,
+              "column": 3
+            },
+            {
+              "title": "TC-SYS-08 (EVENT-08): the create form rejects an end time before the start",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [
+                    {
+                      "type": "serial",
+                      "location": {
+                        "file": "system-tests/tests/02-event-lifecycle.spec.js",
+                        "line": 0,
+                        "column": 0
+                      }
+                    }
+                  ],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 845,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "steps": [
+                        {
+                          "title": "Log in as an organizer and open Create Event",
+                          "duration": 558
+                        },
+                        {
+                          "title": "Fill every field, with the end time two hours before the start, and submit",
+                          "duration": 159
+                        },
+                        {
+                          "title": "The server rejects it and the form shows \"End date and time must be after the start\"",
+                          "duration": 13
+                        }
+                      ],
+                      "startTime": "2026-11-16T14:16:54.407Z",
+                      "annotations": [
+                        {
+                          "type": "serial",
+                          "location": {
+                            "file": "system-tests/tests/02-event-lifecycle.spec.js",
+                            "line": 0,
+                            "column": 0
+                          }
+                        }
+                      ],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "9c7544289b9bfa20e52b-670d335eadf1ca3646b2",
+              "file": "02-event-lifecycle.spec.js",
+              "line": 27,
+              "column": 3
+            },
+            {
+              "title": "TC-SYS-09 (EVENT-01): an organizer creates an event and it is listed under My Events",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [
+                    {
+                      "type": "serial",
+                      "location": {
+                        "file": "system-tests/tests/02-event-lifecycle.spec.js",
+                        "line": 0,
+                        "column": 0
+                      }
+                    }
+                  ],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 810,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "steps": [
+                        {
+                          "title": "Log in as an organizer and fill in Create Event with valid details",
+                          "duration": 574
+                        },
+                        {
+                          "title": "The new event details page opens with the title",
+                          "duration": 59
+                        },
+                        {
+                          "title": "My Events lists the event",
+                          "duration": 82
+                        }
+                      ],
+                      "startTime": "2026-11-16T14:16:55.259Z",
+                      "annotations": [
+                        {
+                          "type": "serial",
+                          "location": {
+                            "file": "system-tests/tests/02-event-lifecycle.spec.js",
+                            "line": 0,
+                            "column": 0
+                          }
+                        }
+                      ],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "9c7544289b9bfa20e52b-28ce76da4a4f2cf6639c",
+              "file": "02-event-lifecycle.spec.js",
+              "line": 47,
+              "column": 3
+            },
+            {
+              "title": "TC-SYS-10 (DISC-01, DISC-02): a student browses and searches for the event",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [
+                    {
+                      "type": "serial",
+                      "location": {
+                        "file": "system-tests/tests/02-event-lifecycle.spec.js",
+                        "line": 0,
+                        "column": 0
+                      }
+                    }
+                  ],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 909,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "steps": [
+                        {
+                          "title": "Log in as a student and open Browse Events; the new event is listed",
+                          "duration": 524
+                        },
+                        {
+                          "title": "Search for a word no event contains; the event is not listed",
+                          "duration": 77
+                        },
+                        {
+                          "title": "Search for \"Hackathon\" and open the result; its details page opens",
+                          "duration": 206
+                        }
+                      ],
+                      "startTime": "2026-11-16T14:16:56.079Z",
+                      "annotations": [
+                        {
+                          "type": "serial",
+                          "location": {
+                            "file": "system-tests/tests/02-event-lifecycle.spec.js",
+                            "line": 0,
+                            "column": 0
+                          }
+                        }
+                      ],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "9c7544289b9bfa20e52b-a8f2eda53028bc1afa04",
+              "file": "02-event-lifecycle.spec.js",
+              "line": 72,
+              "column": 3
+            },
+            {
+              "title": "TC-SYS-11 (REG-01, REG-03, HIST-01): a student registers once and sees it in My Registrations",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [
+                    {
+                      "type": "serial",
+                      "location": {
+                        "file": "system-tests/tests/02-event-lifecycle.spec.js",
+                        "line": 0,
+                        "column": 0
+                      }
+                    }
+                  ],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 854,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "steps": [
+                        {
+                          "title": "Log in as a student, open the event and click Register for this event",
+                          "duration": 600
+                        },
+                        {
+                          "title": "Reload: the page still shows the registration and offers no second Register button",
+                          "duration": 93
+                        },
+                        {
+                          "title": "My Registrations lists the event",
+                          "duration": 55
+                        }
+                      ],
+                      "startTime": "2026-11-16T14:16:56.999Z",
+                      "annotations": [
+                        {
+                          "type": "serial",
+                          "location": {
+                            "file": "system-tests/tests/02-event-lifecycle.spec.js",
+                            "line": 0,
+                            "column": 0
+                          }
+                        }
+                      ],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "9c7544289b9bfa20e52b-42002bdd9e722abbf60b",
+              "file": "02-event-lifecycle.spec.js",
+              "line": 91,
+              "column": 3
+            },
+            {
+              "title": "TC-SYS-12 (PART-01): the organizer sees the student in the participant list",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [
+                    {
+                      "type": "serial",
+                      "location": {
+                        "file": "system-tests/tests/02-event-lifecycle.spec.js",
+                        "line": 0,
+                        "column": 0
+                      }
+                    }
+                  ],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 682,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "steps": [
+                        {
+                          "title": "Log in as the organizer and open the event Participants page",
+                          "duration": 544
+                        },
+                        {
+                          "title": "The registered student is listed",
+                          "duration": 64
+                        }
+                      ],
+                      "startTime": "2026-11-16T14:16:57.863Z",
+                      "annotations": [
+                        {
+                          "type": "serial",
+                          "location": {
+                            "file": "system-tests/tests/02-event-lifecycle.spec.js",
+                            "line": 0,
+                            "column": 0
+                          }
+                        }
+                      ],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "9c7544289b9bfa20e52b-49be3be818ecb88a050d",
+              "file": "02-event-lifecycle.spec.js",
+              "line": 109,
+              "column": 3
+            },
+            {
+              "title": "TC-SYS-13 (ATT-01, ATT-03): the organizer marks the student present and it is stored",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [
+                    {
+                      "type": "serial",
+                      "location": {
+                        "file": "system-tests/tests/02-event-lifecycle.spec.js",
+                        "line": 0,
+                        "column": 0
+                      }
+                    }
+                  ],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 723,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "steps": [
+                        {
+                          "title": "Log in as the organizer, open Attendance and click Present for the student",
+                          "duration": 559
+                        },
+                        {
+                          "title": "Reload: Present is still selected, so it was saved in the database",
+                          "duration": 92
+                        }
+                      ],
+                      "startTime": "2026-11-16T14:16:58.555Z",
+                      "annotations": [
+                        {
+                          "type": "serial",
+                          "location": {
+                            "file": "system-tests/tests/02-event-lifecycle.spec.js",
+                            "line": 0,
+                            "column": 0
+                          }
+                        }
+                      ],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "9c7544289b9bfa20e52b-639c9c4a43a252f84f13",
+              "file": "02-event-lifecycle.spec.js",
+              "line": 119,
+              "column": 3
+            },
+            {
+              "title": "TC-SYS-14 (REP-01, REP-03): the event report shows the registration and attendance totals",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [
+                    {
+                      "type": "serial",
+                      "location": {
+                        "file": "system-tests/tests/02-event-lifecycle.spec.js",
+                        "line": 0,
+                        "column": 0
+                      }
+                    }
+                  ],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 598,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "steps": [
+                        {
+                          "title": "Log in as the organizer and open the event Report",
+                          "duration": 416
+                        },
+                        {
+                          "title": "Registered 1, Seats left 39 (of 40), Present 1, Absent 0",
+                          "duration": 102
+                        }
+                      ],
+                      "startTime": "2026-11-16T14:16:59.286Z",
+                      "annotations": [
+                        {
+                          "type": "serial",
+                          "location": {
+                            "file": "system-tests/tests/02-event-lifecycle.spec.js",
+                            "line": 0,
+                            "column": 0
+                          }
+                        }
+                      ],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "9c7544289b9bfa20e52b-9fec603a81804ae64dd7",
+              "file": "02-event-lifecycle.spec.js",
+              "line": 133,
+              "column": 3
+            },
+            {
+              "title": "TC-SYS-15 (EVENT-07): another organizer cannot change this event",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [
+                    {
+                      "type": "serial",
+                      "location": {
+                        "file": "system-tests/tests/02-event-lifecycle.spec.js",
+                        "line": 0,
+                        "column": 0
+                      }
+                    }
+                  ],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 110,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "steps": [
+                        {
+                          "title": "A second organizer sends PATCH /api/events/:id for this event; the API answers 403",
+                          "duration": 108
+                        }
+                      ],
+                      "startTime": "2026-11-16T14:16:59.896Z",
+                      "annotations": [
+                        {
+                          "type": "serial",
+                          "location": {
+                            "file": "system-tests/tests/02-event-lifecycle.spec.js",
+                            "line": 0,
+                            "column": 0
+                          }
+                        }
+                      ],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "9c7544289b9bfa20e52b-2ede918102e8093c8c9b",
+              "file": "02-event-lifecycle.spec.js",
+              "line": 148,
+              "column": 3
+            },
+            {
+              "title": "TC-SYS-16 (EVENT-05): the organizer cancels the event and the student sees it as cancelled",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [
+                    {
+                      "type": "serial",
+                      "location": {
+                        "file": "system-tests/tests/02-event-lifecycle.spec.js",
+                        "line": 0,
+                        "column": 0
+                      }
+                    }
+                  ],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1154,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "steps": [
+                        {
+                          "title": "Log in as the organizer, open Edit or cancel, click Cancel event and confirm",
+                          "duration": 557
+                        },
+                        {
+                          "title": "In a separate session the student sees the event as Cancelled with no Register button",
+                          "duration": 512
+                        }
+                      ],
+                      "startTime": "2026-11-16T14:17:00.014Z",
+                      "annotations": [
+                        {
+                          "type": "serial",
+                          "location": {
+                            "file": "system-tests/tests/02-event-lifecycle.spec.js",
+                            "line": 0,
+                            "column": 0
+                          }
+                        }
+                      ],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "9c7544289b9bfa20e52b-a5cf789e97504c49d120",
+              "file": "02-event-lifecycle.spec.js",
+              "line": 157,
+              "column": 3
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "03-capacity.spec.js",
+      "file": "03-capacity.spec.js",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "TC-SYS-17 (REG-05, STATUS-02, STATUS-03): once the last seat is taken nobody else can register",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1552,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "steps": [
+                    {
+                      "title": "Set-up: an organizer creates an event with 1 seat",
+                      "duration": 109
+                    },
+                    {
+                      "title": "Student 1 registers and takes the only seat",
+                      "duration": 621
+                    },
+                    {
+                      "title": "Student 2 opens the event: registration is closed and the button is disabled",
+                      "duration": 670
+                    }
+                  ],
+                  "startTime": "2026-11-16T14:17:01.182Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "476625a71baedd78f446-80ceacd029f081aa92ae",
+          "file": "03-capacity.spec.js",
+          "line": 5,
+          "column": 1
+        }
+      ]
+    },
+    {
+      "title": "04-non-functional.spec.js",
+      "file": "04-non-functional.spec.js",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "TC-SYS-18 (PERF-01): main API calls answer within 2 seconds",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [
+                {
+                  "type": "timing",
+                  "description": "POST /api/auth/login: slowest of 10 calls 92 ms"
+                },
+                {
+                  "type": "timing",
+                  "description": "GET /api/events: slowest of 10 calls 7 ms"
+                },
+                {
+                  "type": "timing",
+                  "description": "GET /api/events/:id: slowest of 10 calls 6 ms"
+                },
+                {
+                  "type": "timing",
+                  "description": "GET /api/registrations/mine: slowest of 10 calls 8 ms"
+                }
+              ],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1362,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "steps": [
+                    {
+                      "title": "Call each of 4 main endpoints 10 times and record the slowest response",
+                      "duration": 1097
+                    },
+                    {
+                      "title": "Every slowest response is at most 2000 ms",
+                      "duration": 2
+                    }
+                  ],
+                  "startTime": "2026-11-16T14:17:02.747Z",
+                  "annotations": [
+                    {
+                      "type": "timing",
+                      "description": "POST /api/auth/login: slowest of 10 calls 92 ms"
+                    },
+                    {
+                      "type": "timing",
+                      "description": "GET /api/events: slowest of 10 calls 7 ms"
+                    },
+                    {
+                      "type": "timing",
+                      "description": "GET /api/events/:id: slowest of 10 calls 6 ms"
+                    },
+                    {
+                      "type": "timing",
+                      "description": "GET /api/registrations/mine: slowest of 10 calls 8 ms"
+                    }
+                  ],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "27eab4c7074c82d4afaf-dd46b4f1c472364304e2",
+          "file": "04-non-functional.spec.js",
+          "line": 5,
+          "column": 1
+        },
+        {
+          "title": "TC-SYS-19 (SEC-01): protected APIs need a valid token and never return passwords",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 192,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "steps": [
+                    {
+                      "title": "Calls with no token or a made-up token are rejected with 401",
+                      "duration": 7
+                    },
+                    {
+                      "title": "A real token with a changed signature is rejected with 401",
+                      "duration": 4
+                    },
+                    {
+                      "title": "The login and profile responses contain no password field or password value",
+                      "duration": 91
+                    }
+                  ],
+                  "startTime": "2026-11-16T14:17:04.122Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "27eab4c7074c82d4afaf-612573b608cb2f5b8901",
+          "file": "04-non-functional.spec.js",
+          "line": 34,
+          "column": 1
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-11-16T14:16:46.953Z",
+    "duration": 17442.335,
+    "expected": 19,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  }
+}

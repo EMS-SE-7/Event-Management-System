@@ -1,0 +1,12 @@
+{
+  "name": "system-tests",
+  "private": true,
+  "description": "End-to-end system tests: a real browser drives the built React app against the real Express API and MongoDB",
+  "scripts": {
+    "test": "playwright test"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.63.0",
+    "marked": "^15.0.12"
+  }
+}

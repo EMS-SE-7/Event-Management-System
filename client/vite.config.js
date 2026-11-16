@@ -13,6 +13,20 @@ export default defineConfig(({ mode }) => {
     test: {
       environment: 'jsdom',
       setupFiles: './src/test/setup.js',
+      // Test levels: `npm run test:unit` and `npm run test:integration` run one project each.
+      projects: [
+        { extends: true, test: { name: 'unit', include: ['src/utils/**/*.test.{js,jsx}'] } },
+        {
+          extends: true,
+          test: { name: 'integration', include: ['src/**/*.test.{js,jsx}'], exclude: ['src/utils/**'] },
+        },
+      ],
+      coverage: {
+        provider: 'v8',
+        include: ['src/**/*.{js,jsx}'],
+        exclude: ['src/**/*.test.{js,jsx}', 'src/test/**', 'src/main.jsx', 'src/api/mock*.js'],
+        reporter: ['text', 'text-summary', 'html', 'json', 'json-summary', 'lcovonly'],
+      },
     },
   }
 })

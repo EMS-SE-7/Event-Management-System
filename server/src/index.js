@@ -2,13 +2,18 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const mongoose = require('mongoose');
+const path = require('path');
 const AppError = require('./utils/AppError');
+const serveClient = require('./serveClient');
 
 const app = express();
 app.use(cors());
 app.use(express.json());
 
-app.get('/api/health', (req, res) => res.json({ status: 'ok' }));
+// RENDER_GIT_COMMIT is set by Render, so CI can check which commit is live.
+app.get('/api/health', (req, res) =>
+  res.json({ status: 'ok', commit: process.env.RENDER_GIT_COMMIT || null }),
+);
 
 app.use('/api/auth', require('./routes/auth.routes'));
 app.use('/api/attendance', require('./routes/attendanceRoutes'));
@@ -16,6 +21,10 @@ app.use('/api/reports', require('./routes/reportRoutes'));
 app.use('/api/events/:eventId/participants', require('./routes/participants.routes'));
 app.use('/api/events', require('./routes/events.routes'));
 app.use('/api/registrations', require('./routes/registrations.routes'));
+
+if (process.env.NODE_ENV === 'production') {
+  serveClient(app, process.env.CLIENT_DIST || path.join(__dirname, '..', '..', 'client', 'dist'));
+}
 
 app.use((req, res, next) => next(new AppError(404, 'NOT_FOUND', 'Not found')));
 app.use(require('./middleware/errorHandler')); // always the last line

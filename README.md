@@ -86,3 +86,25 @@ To click through the event pages without any server, put `VITE_USE_MOCK=true` in
 cd server && npm test    # Jest + Supertest, uses an in-memory MongoDB (no .env needed)
 cd client && npm test    # Vitest + React Testing Library
 ```
+
+Tests are organised by the levels in the Test Plan:
+
+| Level | Command |
+|---|---|
+| Unit | `npm run test:unit` in `server/` and in `client/` |
+| Integration | `npm run test:integration` in `server/` and in `client/` |
+| System (end to end in a browser) | `npm run build --prefix client`, then `npm ci && npx playwright install chromium && npm test` in `system-tests/` |
+
+To run every level and rebuild the Unit, Integration and System Test Reports and the Code & Branch Coverage Report in `docs/`:
+
+```bash
+bash scripts/generate-test-reports.sh
+```
+
+See [docs/test-reports/README.md](docs/test-reports/README.md) for the test levels, results and requirement traceability.
+
+## CI/CD and deployment
+
+[![CI/CD](https://github.com/EMS-SE-7/Event-Management-System/actions/workflows/ci.yml/badge.svg)](https://github.com/EMS-SE-7/Event-Management-System/actions/workflows/ci.yml)
+
+GitHub Actions ([`.github/workflows/ci.yml`](.github/workflows/ci.yml)) runs the unit, integration and system tests with coverage on every push and pull request. On `main`, only when every test passes, it deploys to a free Render web service ([`render.yaml`](render.yaml)) that serves both the API and the React app. One-time set-up steps are in [docs/deployment.md](docs/deployment.md).
