@@ -1,110 +1,118 @@
 # Event Management System
-A full-stack web application for managing events, including event creation, discovery, and user participation.
 
-## Technology Stack
-Frontend: React and Vite
-Backend: Node.js and Express
-Database: MongoDB with Mongoose
+A web application for managing college events. Organizers create and manage events, students discover and register for them, and organizers record attendance and view reports.
 
-## Project Structure
-client/ — React frontend
-server/ — Express backend and API
-docs/ — Project requirements and documentation
+## View deployed site:
 
-## Prerequisites
-Git
-Node.js and npm
-MongoDB
+###  [**pesu-ems.onrender.com**](https://pesu-ems.onrender.com)
 
+logins:
+| Role | Email | Password |
+|---|---|---|
+| Organizer | organizer1@pesu.pes.edu | Test@1234 |
+| Student | pes1ug24cs001@pesu.pes.edu | Test@1234 |
 
-Project requirements and related PDFs are available in docs/.
+## Features
+
+**Students**
+- Sign up and log in
+- Browse events with search, category and status filters
+- View event details, available seats and the registration deadline
+- Register for events, cancel registrations and view registration history
+
+**Organizers**
+- Create, edit and cancel events
+- View registered students for each event
+- Mark attendance as Present or Absent
+- View reports on registrations and attendance
+
+## Tech stack
+
+| Layer | Technology |
+|---|---|
+| Frontend | React, Vite, React Router |
+| Backend | Node.js, Express |
+| Database | MongoDB Atlas, Mongoose |
+| Authentication | JWT, bcrypt |
+| Testing | Jest, Supertest, Vitest, React Testing Library, Playwright |
+| CI/CD | GitHub Actions, Render |
 
 ## Running locally
 
-You need **Node.js 20 or newer** (`node -v`) and a MongoDB database. Use either the team Atlas cluster or MongoDB on your own machine.
+**Prerequisites:** Git, Node.js 20 or newer, and a MongoDB database (MongoDB Atlas or a local MongoDB server).
 
-### 1. Get a MongoDB connection string
+**1. Clone the repository**
 
-- **Team Atlas cluster (recommended):** ask Shayna for the `mongodb+srv://...` string. It must end with the database name, e.g. `...mongodb.net/pesu_ems_dev?retryWrites=true&w=majority`.
-- **Local MongoDB:** install [MongoDB Community Server](https://www.mongodb.com/try/download/community) (or run `docker run -d -p 27017:27017 --name ems-mongo mongo:7`). The string is then `mongodb://127.0.0.1:27017/pesu_ems`.
+```bash
+git clone https://github.com/EMS-SE-7/Event-Management-System.git
+cd Event-Management-System
+```
 
-### 2. Start the server (terminal 1)
+**2. Configure and start the server**
 
 ```bash
 cd server
-cp .env.example .env     # Windows CMD: copy .env.example .env
+cp .env.example .env
 ```
 
-Open `server/.env` and set:
+Set the following values in server/.env:
 
-| Variable | What to put |
+| Variable | Description |
 |---|---|
-| `MONGO_URI` | the connection string from step 1 (the name is `MONGO_URI`, not `MONGODB_URI`) |
-| `JWT_SECRET` | any long random string: `node -e "console.log(require('crypto').randomBytes(48).toString('hex'))"` |
-| `ORGANIZER_EMAILS`, `STUDENT_EMAILS` | demo accounts to create; every email must end in `@pesu.pes.edu` |
-| `SEED_PASSWORD` | the password all seeded accounts get |
-| `PORT` | `5000` (on a Mac, use `5050`: AirPlay already uses 5000) |
-
-Then:
+| `MONGO_URI` | MongoDB connection string |
+| `JWT_SECRET` | A long random string used to sign login tokens |
+| `ORGANIZER_EMAILS`, `STUDENT_EMAILS` | Comma-separated demo accounts to create |
+| `SEED_PASSWORD` | Password for the demo accounts |
+| `PORT` | Server port, default `5000` |
 
 ```bash
 npm install
-npm run seed             # creates the organizer and student accounts
-npm run seed:events      # demo events in every status, with registrations and attendance
-npm run dev              # prints "MongoDB connected" and "Server running on http://localhost:5000"
+npm run seed            # create demo accounts
+npm run seed:events     # create demo events, registrations and attendance
+npm run dev             # http://localhost:5000
 ```
 
-### 3. Start the client (terminal 2)
+**3. Start the client** (in a second terminal)
 
 ```bash
 cd client
-cp .env.example .env     # only needed if you changed PORT: set VITE_API_PROXY=http://localhost:5050
 npm install
-npm run dev              # http://localhost:5173
+npm run dev             # http://localhost:5173
 ```
 
-### 4. Log in
+If the server runs on a port other than 5000, copy `client/.env.example` to `client/.env` and update `VITE_API_PROXY`.
 
-Open http://localhost:5173 and log in with one of the emails from `ORGANIZER_EMAILS` or `STUDENT_EMAILS` and the `SEED_PASSWORD`. New students can also sign up from the Register page. Organizer accounts only come from the seed script.
-
-To click through the event pages without any server, put `VITE_USE_MOCK=true` in `client/.env.local` (login still needs the server).
-
-### Troubleshooting
-
-| Symptom | Fix |
-|---|---|
-| `MONGO_URI is missing from server/.env` | The variable is called `MONGO_URI`. Check `server/.env` exists (not only `.env.example`). |
-| `MongoDB connection failed: bad auth` | Wrong user or password in the Atlas string, or `<db_password>` was left in. |
-| `querySrv ENOTFOUND` or a timeout | Your IP is not allowed in Atlas Network Access, or the Wi-Fi blocks port 27017. Try a phone hotspot. |
-| Every page says "Something went wrong" or "Cannot reach the server" | The server is not running, or it runs on a port other than the one in `VITE_API_PROXY`. |
-| `npm run seed:events` says "No organizer accounts found" | Run `npm run seed` first. |
-| Login says "Invalid credentials" | Use a seeded email with `SEED_PASSWORD`, or register a new student. |
+**4. Log in** at http://localhost:5173 using a seeded email and `SEED_PASSWORD`.
 
 ## Tests
 
-```bash
-cd server && npm test    # Jest + Supertest, uses an in-memory MongoDB (no .env needed)
-cd client && npm test    # Vitest + React Testing Library
-```
-
-Tests are organised by the levels in the Test Plan:
-
 | Level | Command |
 |---|---|
-| Unit | `npm run test:unit` in `server/` and in `client/` |
-| Integration | `npm run test:integration` in `server/` and in `client/` |
-| System (end to end in a browser) | `npm run build --prefix client`, then `npm ci && npx playwright install chromium && npm test` in `system-tests/` |
+| All server tests | `cd server && npm test` |
+| All client tests | `cd client && npm test` |
+| Unit | `npm run test:unit` in `server/` or `client/` |
+| Integration | `npm run test:integration` in `server/` or `client/` |
+| System (end to end) | `npm run build --prefix client`, then in `system-tests/`: `npm ci && npx playwright install chromium && npm test` |
 
-To run every level and rebuild the Unit, Integration and System Test Reports and the Code & Branch Coverage Report in `docs/`:
-
-```bash
-bash scripts/generate-test-reports.sh
-```
-
-See [docs/test-reports/README.md](docs/test-reports/README.md) for the test levels, results and requirement traceability.
+Server tests use an in-memory MongoDB and need no configuration.
 
 ## CI/CD and deployment
 
-[![CI/CD](https://github.com/EMS-SE-7/Event-Management-System/actions/workflows/ci.yml/badge.svg)](https://github.com/EMS-SE-7/Event-Management-System/actions/workflows/ci.yml)
+GitHub Actions (ci.yml) runs the unit, integration and system tests with coverage on every push and pull request. When all tests pass on main, the application is deployed to Render (render.yaml), where a single service hosts both the API and the frontend. 
 
-GitHub Actions ([`.github/workflows/ci.yml`](.github/workflows/ci.yml)) runs the unit, integration and system tests with coverage on every push and pull request. On `main`, only when every test passes, it deploys to a free Render web service ([`render.yaml`](render.yaml)) that serves both the API and the React app. One-time set-up steps are in [docs/deployment.md](docs/deployment.md).
+## Documentation
+
+- [Proposal](docs/Proposal.pdf)
+- [Software Requirements Specification](docs/Software_Requirement_Specification.pdf)
+- [Software Architecture and Design Specification](docs/SASD.pdf)
+- [Test Plan](docs/Test_Plan.pdf)
+- [Test Reports](docs)
+
+## Team and contributions
+
+| Member | Role | Contributions |
+|---|---|---|
+| **Shayna Zaidi Gupta** | Team Lead, Event Management | Project setup, GitHub Actions CI/CD, Render deployment, event module , Sprint 1 integration, UI redesign and bug fixes, Playwright system tests, test reports and coverage, documentation |
+| **Shriya C Rao** | Attendance and Reporting | Attendance marking, reports, tests |
+| **Shaurya Ishan** | Authentication and Roles | Login and registration, JWT and role-based access, demo account seeding, tests |
+| **Sham Santhosh S** | Registration and Participation | Event registration and cancellation, registration history, participants list, event search and edit APIs, tests |
